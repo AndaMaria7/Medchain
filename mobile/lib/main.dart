@@ -4,6 +4,7 @@ import 'package:medchain_emergency/features/emergency/emergency_home_page.dart';
 import 'package:medchain_emergency/features/emergency/emergency_provider.dart';
 import 'package:medchain_emergency/features/hospital/hospital_provider.dart';
 import 'package:medchain_emergency/features/hospital/hospital_admin_page.dart';
+import 'package:medchain_emergency/features/emergency/hospital_result_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'core/theme/app_theme.dart';
@@ -11,7 +12,6 @@ import 'core/theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -38,10 +38,21 @@ class MedChainApp extends StatelessWidget {
         title: 'MedChain Emergency',
         theme: AppTheme.darkTheme,
         debugShowCheckedModeBanner: false,
+        navigatorKey: emergencyNavigatorKey, // Use the global navigation key
         home: const AppRouter(),
         routes: {
           '/emergency': (context) => const EmergencyHomePage(),
           '/hospital-admin': (context) => const HospitalAdminPage(),
+          '/hospital-results': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+            return HospitalResultScreen(
+              matchedHospital: args['matchedHospital'],
+              matchScore: args['matchScore'] ?? (args['matchedHospital'] != null && args['matchedHospital']['score'] != null ? 
+                  (args['matchedHospital']['score'] as num).toDouble() : null),
+              emergencyId: args['emergencyId'],
+              jobId: args['jobId'],
+            );
+          },
         },
       ).animate().fadeIn(duration: 800.ms),
     );

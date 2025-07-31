@@ -1,0 +1,121 @@
+[
+  {
+    "id": "hospital_001",
+    "name": "Central Emergency Hospital",
+    "location": {
+      "lat": 44.4268,
+      "lng": 26.1025
+    },
+    "capacity": 85,
+    "specializations": ["Emergency", "Cardiology", "Trauma", "Surgery"],
+    "beds_available": 12,
+    "emergency_room_wait_time_minutes": 15,
+    "contact": {
+      "phone": "+40-21-555-0001",
+      "email": "contact@centralemergency.ro"
+    },
+    "did": "did:op:87654321abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+  },
+  {
+    "id": "hospital_002",
+    "name": "University Medical Center",
+    "location": {
+      "lat": 44.4361,
+      "lng": 26.0919
+    },
+    "capacity": 120,
+    "specializations": ["Cardiology", "Neurology", "Oncology", "Pediatrics"],
+    "beds_available": 25,
+    "emergency_room_wait_time_minutes": 30,
+    "contact": {
+      "phone": "+40-21-555-0002",
+      "email": "info@universitymedical.ro"
+    },
+    "did": "did:op:abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234567"
+  },
+  {
+    "id": "hospital_003",
+    "name": "St. Maria Hospital",
+    "location": {
+      "lat": 44.4459,
+      "lng": 26.1057
+    },
+    "capacity": 65,
+    "specializations": ["Emergency", "Internal Medicine", "Geriatrics"],
+    "beds_available": 8,
+    "emergency_room_wait_time_minutes": 20,
+    "contact": {
+      "phone": "+40-21-555-0003",
+      "email": "contact@stmaria.ro"
+    },
+    "did": "did:op:fedcba9876543210fedcba9876543210fedcba9876543210fedcba98765432"
+  },
+  {
+    "id": "hospital_004",
+    "name": "Military Medical Institute",
+    "location": {
+      "lat": 44.4305,
+      "lng": 26.0875
+    },
+    "capacity": 95,
+    "specializations": ["Emergency", "Trauma", "Surgery", "Rehabilitation"],
+    "beds_available": 15,
+    "emergency_room_wait_time_minutes": 10,
+    "contact": {
+      "phone": "+40-21-555-0004",
+      "email": "office@militarymedical.ro"
+    },
+    "did": "did:op:13579bdf2468ace13579bdf2468ace13579bdf2468ace13579bdf2468ace13"
+  },
+  {
+    "id": "hospital_005",
+    "name": "Children's Emergency Hospital",
+    "location": {
+      "lat": 44.4198,
+      "lng": 26.1127
+    },
+    "capacity": 75,
+    "specializations": ["Pediatrics", "Emergency", "Pediatric Surgery"],
+    "beds_available": 18,
+    "emergency_room_wait_time_minutes": 25,
+    "contact": {
+      "phone": "+40-21-555-0005",
+      "email": "info@childrenshospital.ro"
+    },
+    "did": "did:op:24680ace13579bdf24680ace13579bdf24680ace13579bdf24680ace13579b"
+  },
+  {
+    "id": "hospital_006",
+    "name": "Cardiac Care Center",
+    "location": {
+      "lat": 44.4385,
+      "lng": 26.1205
+    },
+    "capacity": 60,
+    "specializations": ["Cardiology", "Cardiac Surgery", "Vascular Medicine"],
+    "beds_available": 7,
+    "emergency_room_wait_time_minutes": 15,
+    "contact": {
+      "phone": "+40-21-555-0006",
+      "email": "contact@cardiaccare.ro"
+    },
+    "did": "did:op:369cf258147ad0369cf258147ad0369cf258147ad0369cf258147ad0369cf2"
+  },
+  {
+    "id": "hospital_007",
+    "name": "Neurological Institute",
+    "location": {
+      "lat": 44.4512,
+      "lng": 26.0978
+    },
+    "capacity": 55,
+    "specializations": ["Neurology", "Neurosurgery", "Stroke Care"],
+    "beds_available": 5,
+    "emergency_room_wait_time_minutes": 20,
+    "contact": {
+      "phone": "+40-21-555-0007",
+      "email": "office@neuroinstitute.ro"
+    },
+    "did": "did:op:753159e8642086420753159e8642086420753159e8642086420753159e86420"
+  }
+]

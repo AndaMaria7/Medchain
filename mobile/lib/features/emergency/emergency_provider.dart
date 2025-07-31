@@ -1,107 +1,179 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:medchain_emergency/features/hospital/hospital_model.dart';
-import '../../services/emergency_service.dart';
+import 'package:logger/logger.dart';
+import 'package:medchain_emergency/services/emergency_service.dart';
 
-class EmergencyProvider extends ChangeNotifier {
-  final EmergencyService _emergencyService = EmergencyService();
+final GlobalKey<NavigatorState> emergencyNavigatorKey = GlobalKey<NavigatorState>();
+
+class EmergencyProvider with ChangeNotifier {
+  late final Logger _logger;
+  late final EmergencyService _emergencyService;
   
   bool _isLoading = false;
-  bool _isEmergencyActive = false;
-  HospitalModel? _matchedHospital; // ✅ Fixed: Changed to HospitalModel
   String? _currentEmergencyId;
-  List<HospitalModel> _availableHospitals = []; // ✅ Fixed: Changed to HospitalModel list
+  String? _currentJobId;
+  Map<String, dynamic>? _emergencyResults;
   String? _error;
-
+  
   // Getters
   bool get isLoading => _isLoading;
-  bool get isEmergencyActive => _isEmergencyActive;
-  HospitalModel? get matchedHospital => _matchedHospital; // ✅ Fixed: Return HospitalModel
   String? get currentEmergencyId => _currentEmergencyId;
-  List<HospitalModel> get availableHospitals => _availableHospitals; // ✅ Fixed: Return HospitalModel list
+  String? get currentJobId => _currentJobId;
+  Map<String, dynamic>? get emergencyResults => _emergencyResults;
   String? get error => _error;
+  bool get hasResults => _emergencyResults != null;
+  
+  EmergencyProvider() {
+    _logger = Logger();
+    _emergencyService = EmergencyService();
+  }
 
+  /// Create emergency and handle the full flow
   Future<void> createEmergency({
-    required double latitude,
-    required double longitude,
-    required int severity,
-    String type = 'general',
+    required String emergencyType,
+    required Map<String, dynamic> patientData,
+    required Map<String, double> location,
+    required Function(Map<String, dynamic>) onSuccess,
+    required Function(String) onError,
   }) async {
     try {
       _setLoading(true);
       _clearError();
+      _clearResults();
       
-      print('🚨 Creating emergency at: $latitude, $longitude');
+      _logger.i('🚨 Creating emergency...');
       
-      // Create emergency using the service
-      _currentEmergencyId = await _emergencyService.createEmergency(
-        location: 'Current Location',
-        severity: severity,
-        latitude: latitude,
-        longitude: longitude,
+      // Step 1: Create emergency and get job ID
+      final emergencyData = await _emergencyService.createEmergency(
+        emergencyType: emergencyType,
+        patientData: patientData,
+        location: location,
       );
-
-      _isEmergencyActive = true;
       
-      print('✅ Emergency created: $_currentEmergencyId');
+      _currentEmergencyId = emergencyData['emergencyId'] as String;
+      _currentJobId = emergencyData['jobId'] as String;
       
-      // Start polling for results
-      _pollForMatchingResults();
+      _logger.i('✅ Emergency created: $_currentEmergencyId');
+      _logger.i('🔄 Starting to poll for real Ocean Protocol results...');
+      
+      // Step 2: Start polling in background
+      _pollForMatchingResults(_currentJobId!, _currentEmergencyId!, onSuccess, onError);
       
     } catch (e) {
-      _setError('Nu am putut crea urgența. Te rugăm să încerci din nou sau să suni la 112.');
-      print('❌ Emergency creation failed: $e');
+      _logger.e('❌ Emergency creation failed: $e');
+      _setError(e.toString());
+      onError(e.toString());
     } finally {
       _setLoading(false);
     }
   }
 
-  Future<void> _pollForMatchingResults() async {
-    if (_currentEmergencyId == null) return;
-    
+  /// Poll for results and navigate when complete
+  Future<void> _pollForMatchingResults(
+    String jobId,
+    String emergencyId,
+    Function(Map<String, dynamic>) onSuccess,
+    Function(String) onError,
+  ) async {
     try {
-      // Simulate waiting for results (since we're using mock data)
-      await Future.delayed(const Duration(seconds: 8));
+      _logger.i('🔄 Polling for job: $jobId');
       
-      // Get mock hospital result and convert to HospitalModel
-      final hospitalMaps = await _emergencyService.getAvailableHospitals();
-      if (hospitalMaps.isNotEmpty) {
-        // ✅ Fixed: Convert Map to HospitalModel
-        _matchedHospital = HospitalModel.fromJson(hospitalMaps.first);
-        print('🏥 Hospital matched: ${_matchedHospital!.name}');
-        notifyListeners();
+      // Poll for results with CORRECT job ID
+      final results = await _emergencyService.pollForResults(jobId, emergencyId);
+      
+      _emergencyResults = results;
+      notifyListeners();
+      
+      _logger.i('🎉 Results received, navigating to results screen');
+      
+      // Extract match score for easy access
+      double? matchScore;
+      if (results['matchedHospital'] != null && results['matchedHospital']['score'] != null) {
+        matchScore = (results['matchedHospital']['score'] as num).toDouble();
+      }
+      
+      // Navigate to results screen using the global navigator key
+    // This works even if the original widget is unmounted
+    if (emergencyNavigatorKey.currentState != null && emergencyNavigatorKey.currentContext != null) {
+      // Debug the matched hospital data
+      _logger.d('🏥 Matched hospital data: ${results['matchedHospital']}');
+      _logger.d('📊 Match score: $matchScore');
+      
+      // Make sure we have valid data before navigating
+      if (results['matchedHospital'] != null) {
+        try {
+          emergencyNavigatorKey.currentState!.pushNamed(
+            '/hospital-results',
+            arguments: {
+              'emergencyId': results['emergencyId'] ?? '',
+              'jobId': results['jobId'] ?? '',
+              'matchedHospital': results['matchedHospital'] ?? {},
+              'matchScore': matchScore ?? 0.0,
+              'allMatches': results['allMatches'] ?? [],
+              'emergencyType': results['emergencyType'] ?? 'Emergency',
+              'completedAt': results['completedAt'] ?? DateTime.now().toIso8601String(),
+            },
+          );
+        } catch (e) {
+          _logger.e('❌ Navigation error: $e');
+          _setError('Failed to navigate to hospital results: $e');
+        }
+      } else {
+        _logger.e('❌ No matched hospital data available');
+        _setError('No hospital match found');
+      }
+        
+        // Still call onSuccess for any additional handling
+        onSuccess(results);
+      } else {
+        _logger.e('❌ Navigation failed: Navigator not available');
+        onError('Navigation failed: Navigator not available');
       }
       
     } catch (e) {
-      print('❌ Error polling for results: $e');
+      _logger.e('❌ Polling failed: $e');
+      _setError('Failed to get hospital matches: $e');
+      onError(e.toString());
     }
   }
 
-  Future<void> loadAvailableHospitals() async {
-    try {
-      _setLoading(true);
-      final hospitalMaps = await _emergencyService.getAvailableHospitals();
-      
-      // ✅ Fixed: Convert List<Map> to List<HospitalModel>
-      _availableHospitals = hospitalMaps
-          .map((hospitalMap) => HospitalModel.fromJson(hospitalMap))
-          .toList();
-          
-    } catch (e) {
-      _setError('Nu am putut încărca lista spitalelor.');
-      print('❌ Failed to load hospitals: $e');
-    } finally {
-      _setLoading(false);
+  /// Get the best hospital match
+  Map<String, dynamic>? get bestHospitalMatch {
+    if (_emergencyResults != null && _emergencyResults!['matchedHospital'] != null) {
+      return _emergencyResults!['matchedHospital'] as Map<String, dynamic>;
     }
+    return null;
   }
 
-  void clearEmergency() {
+  /// Get all hospital matches
+  List<Map<String, dynamic>> get allHospitalMatches {
+    if (_emergencyResults != null && _emergencyResults!['allMatches'] != null) {
+      final matches = _emergencyResults!['allMatches'] as List;
+      return matches.cast<Map<String, dynamic>>();
+    }
+    return [];
+  }
+
+  /// Get match score
+  double? get matchScore {
+    final bestMatch = bestHospitalMatch;
+    if (bestMatch != null && bestMatch['score'] != null) {
+      return (bestMatch['score'] as num).toDouble();
+    }
+    return null;
+  }
+
+  /// Reset emergency state
+  void reset() {
     _currentEmergencyId = null;
-    _matchedHospital = null;
-    _isEmergencyActive = false;
-    _clearError();
+    _currentJobId = null;
+    _emergencyResults = null;
+    _error = null;
+    _isLoading = false;
     notifyListeners();
   }
 
+  /// Private helper methods
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();
@@ -115,5 +187,16 @@ class EmergencyProvider extends ChangeNotifier {
   void _clearError() {
     _error = null;
     notifyListeners();
+  }
+
+  void _clearResults() {
+    _emergencyResults = null;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _emergencyService.dispose();
+    super.dispose();
   }
 }

@@ -23,7 +23,7 @@ class Web3Service {
   Web3Service() {
     _web3Client = Web3Client(_rpcUrl, Client());
     _logger = Logger();
-    _initializeWalletConnect(); // Sets up _wcClient instance
+    _initializeWalletConnect(); 
   }
 
   String? get currentAddress => _currentAddress;
@@ -48,7 +48,6 @@ class Web3Service {
     }
   }
 
-  /// Connect wallet (MetaMask, Trust Wallet, etc.)
   Future<String?> connectWallet() async {
     if (_wcClient == null) {
     _logger.e('WalletConnect not initialized');
@@ -56,7 +55,6 @@ class Web3Service {
     }
 
     try {
-      // Ensure WalletConnect core is initialized
       await _wcClient!.init();
 
       _logger.i('🔗 Connecting wallet...');
@@ -80,7 +78,6 @@ class Web3Service {
       final Uri? uri = connectResponse.uri;
       _logger.d('🔗 WalletConnect URI: $uri');
 
-      // Attempt to open the wallet app automatically with the URI (Metamask, etc.)
       if (uri != null) {
         final Uri launchUri = uri;
         try {
@@ -107,7 +104,6 @@ class Web3Service {
     }
   }
 
-  /// Disconnect wallet
   Future<void> disconnectWallet() async {
     try {
       if (_wcClient != null && _currentSession != null) {

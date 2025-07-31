@@ -7,7 +7,7 @@ class OceanService {
   // flutter run --dart-define=OCEAN_BACKEND_URL=http://<host>:<port>
   static const String _baseUrl = String.fromEnvironment(
     'OCEAN_BACKEND_URL',
-    defaultValue: 'http://localhost:3000',
+    defaultValue: 'http://192.168.0.86:3002',
   );
   late final Logger _logger;
 

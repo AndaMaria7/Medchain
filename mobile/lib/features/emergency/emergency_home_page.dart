@@ -8,6 +8,7 @@ import 'package:medchain_emergency/features/emergency/widgets/emergency_button.d
 import 'package:medchain_emergency/features/emergency/widgets/hospital_card.dart';
 import 'package:medchain_emergency/features/emergency/widgets/status_indicator.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
 
@@ -22,6 +23,7 @@ class _EmergencyHomePageState extends State<EmergencyHomePage>
     with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late AnimationController _breatheController;
+  bool _hasNavigated = false; // Prevent multiple navigations
 
   @override
   void initState() {
@@ -84,49 +86,41 @@ class _EmergencyHomePageState extends State<EmergencyHomePage>
                     child: Padding(
                       padding: const EdgeInsets.all(24.0),
                       child: Column(
-            mainAxisSize: MainAxisSize.min,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           // Status Indicator
                           StatusIndicator(
-                            isEmergencyActive: provider.isEmergencyActive,
+                            isEmergencyActive: provider.isLoading || provider.hasResults,
                             isLoading: provider.isLoading,
                           ).animate().fadeIn(delay: 200.ms).slideY(begin: -0.2),
                           
                           const SizedBox(height: 40),
                           
-                          // Emergency Button
-                          EmergencyButton(
-                            onPressed: provider.isLoading ? null : () => _handleEmergencyPress(context, provider),
-                            isLoading: provider.isLoading,
-                            pulseController: _pulseController,
-                            breatheController: _breatheController,
-                          ).animate().scale(delay: 400.ms, duration: 800.ms),
+                          // Emergency Button (only show if not loading and no results)
+                          if (!provider.isLoading && !provider.hasResults)
+                            EmergencyButton(
+  emergencyType: 'general', // Add this
+  patientData: {            // Add this
+    'severity': 7,
+    'symptoms': ['emergency'],
+    'age': 30,
+    'gender': 'unknown',
+  },
+).animate().scale(delay: 400.ms, duration: 800.ms),
                           
                           const SizedBox(height: 40),
                           
                           // Instructions
-                          if (!provider.isEmergencyActive && !provider.isLoading)
-                            _buildInstructions().animate().fadeIn(delay: 600.ms).slideY(begin: 0.3),
+                          if (!provider.isLoading && !provider.hasResults)
+                            _buildInstructions().animate().fadeIn(delay: 600.ms),
                           
                           // Loading Message
                           if (provider.isLoading)
-                            _buildLoadingMessage().animate().fadeIn().slideY(begin: 0.3),
-                          
-                          // Emergency Results
-                          if (provider.matchedHospital != null)
-                            Column(
-                              children: [
-                                const SizedBox(height: 24),
-                                HospitalCard(
-                                  hospital: provider.matchedHospital!,
-                                  onNavigate: () => _navigateToHospital(provider.matchedHospital!),
-                                  onCall: () => _callHospital(provider.matchedHospital!),
-                                ).animate().slideY(begin: 0.5, duration: 600.ms),
-                                
-                                const SizedBox(height: 24),
-                                _buildAdditionalActions(provider).animate().fadeIn(delay: 800.ms),
-                              ],
-                            ),
+                            _buildLoadingMessage().animate().fadeIn().scale(),
+                            
+                          // Additional Actions (when loading is done but waiting for navigation)
+                          if (!provider.isLoading && provider.hasResults && provider.bestHospitalMatch != null)
+                            _buildResultsSummary(provider).animate().fadeIn(delay: 800.ms),
                         ],
                       ),
                     ),
@@ -163,7 +157,7 @@ class _EmergencyHomePageState extends State<EmergencyHomePage>
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
-            mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.info_outline,
@@ -213,7 +207,7 @@ class _EmergencyHomePageState extends State<EmergencyHomePage>
         ],
       ),
       child: Column(
-            mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
@@ -237,6 +231,71 @@ class _EmergencyHomePageState extends State<EmergencyHomePage>
     );
   }
 
+  Widget _buildResultsSummary(EmergencyProvider provider) {
+    final hospital = provider.bestHospitalMatch;
+    final score = provider.matchScore;
+    
+    return GlassmorphicContainer(
+      width: double.infinity,
+      height: 150,
+      borderRadius: 20,
+      blur: 10,
+      alignment: Alignment.center,
+      border: 2,
+      linearGradient: LinearGradient(
+        colors: [
+          AppTheme.accentGreen.withOpacity(0.1),
+          AppTheme.accentGreen.withOpacity(0.05),
+        ],
+      ),
+      borderGradient: LinearGradient(
+        colors: [
+          AppTheme.accentGreen.withOpacity(0.3),
+          AppTheme.accentGreen.withOpacity(0.1),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.check_circle,
+              color: AppTheme.accentGreen,
+              size: 32,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Hospital Found!',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontSize: 16,
+                color: AppTheme.accentGreen,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (hospital != null) ...[
+              Text(
+                hospital['name'] ?? 'Unknown Hospital',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (score != null)
+                Text(
+                  'Match Score: ${score.toStringAsFixed(1)}/100',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.white70,
+                  ),
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildAdditionalActions(EmergencyProvider provider) {
     return Row(
       children: [
@@ -255,7 +314,7 @@ class _EmergencyHomePageState extends State<EmergencyHomePage>
             onPressed: () => _showAllHospitals(context, provider),
           ),
         ),
-      ]
+      ],
     );
   }
 
@@ -286,7 +345,7 @@ class _EmergencyHomePageState extends State<EmergencyHomePage>
           ],
         ),
         child: Column(
-            mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: Colors.white, size: 24),
@@ -307,6 +366,9 @@ class _EmergencyHomePageState extends State<EmergencyHomePage>
 
   Future<void> _handleEmergencyPress(BuildContext context, EmergencyProvider provider) async {
     try {
+      // Reset navigation flag
+      _hasNavigated = false;
+      
       // Haptic feedback
       HapticFeedback.heavyImpact();
       
@@ -328,32 +390,113 @@ class _EmergencyHomePageState extends State<EmergencyHomePage>
       // Get current location
       Position position = await Geolocator.getCurrentPosition();
       
-      // Start emergency matching
-      await provider.createEmergency(
-        latitude: position.latitude,
-        longitude: position.longitude,
-        severity: 7, // Default high severity
-      );
+      // Create emergency data
+      final patientData = {
+        'severity': 7, // High severity
+        'symptoms': ['emergency'], // Default symptoms
+        'age': 30, // Default age
+        'gender': 'unknown', // Default gender
+      };
+      
+      final location = {
+        'lat': position.latitude,
+        'lng': position.longitude,
+      };
+      
+      // Start emergency matching using the corrected provider method
+      // await provider.createEmergency(
+      //   emergencyType: 'general', // Default emergency type
+      //   patientData: patientData,
+      //   location: location,
+      //   onSuccess: (results) {
+      //     // Navigate to results screen
+      //     _navigateToResultScreen(provider);
+      //   },
+      //   onError: (error) {
+      //     _showErrorDialog(context, 'Emergency creation failed: $error');
+      //   },
+      // );
       
     } catch (e) {
       _showErrorDialog(context, 'Eroare: ${e.toString()}');
     }
   }
 
-  void _navigateToHospital(dynamic hospital) {
-    // TODO: Open in maps app
+  Future<void> _navigateToHospital(dynamic hospital) async {
+    if (hospital == null) return;
+    
+    // Get hospital coordinates
+    final lat = hospital['latitude'] ?? hospital['location']?['lat'] ?? 0.0;
+    final lng = hospital['longitude'] ?? hospital['location']?['lng'] ?? 0.0;
+    final name = hospital['name'] ?? 'Hospital';
+    
+    // Create Google Maps URL
+    final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&destination_place_id=$name');
+    
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (context.mounted) {
+        _showErrorDialog(context, 'Could not open maps application');
+      }
+    }
   }
 
-  void _callHospital(dynamic hospital) {
-    // TODO: Make phone call
+  Future<void> _callHospital(dynamic hospital) async {
+    if (hospital == null) return;
+    
+    final phone = hospital['phone'] ?? hospital['contact']?['phone'] ?? '';
+    if (phone.isEmpty) {
+      _showErrorDialog(context, 'No phone number available');
+      return;
+    }
+    
+    final url = Uri.parse('tel:$phone');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      if (context.mounted) {
+        _showErrorDialog(context, 'Could not make phone call');
+      }
+    }
+  }
+
+  void _navigateToResultScreen(EmergencyProvider provider) {
+    if (_hasNavigated || provider.bestHospitalMatch == null) return;
+    
+    _hasNavigated = true; // Prevent multiple navigations
+    
+    // Convert the Map<String, dynamic> to navigation arguments
+    final hospitalData = provider.bestHospitalMatch!;
+    
+    Navigator.of(context).pushNamed(
+      '/hospital-results',
+      arguments: {
+        'emergencyId': provider.currentEmergencyId,
+        'jobId': provider.currentJobId,
+        'matchedHospital': hospitalData,
+        'allMatches': provider.allHospitalMatches,
+        'emergencyType': 'general',
+        'matchScore': provider.matchScore,
+        'completedAt': DateTime.now().toIso8601String(),
+      },
+    );
   }
 
   void _showAllHospitals(BuildContext context, EmergencyProvider provider) {
-    // TODO: Show all hospitals list
+    // Navigate to all hospitals list
+    Navigator.of(context).pushNamed(
+      '/hospitals-list',
+      arguments: {
+        'hospitals': provider.allHospitalMatches,
+        'emergencyId': provider.currentEmergencyId,
+      },
+    );
   }
 
   void _showSettings(BuildContext context) {
-    // TODO: Show settings
+    // Navigate to settings screen
+    Navigator.of(context).pushNamed('/settings');
   }
 
   void _showErrorDialog(BuildContext context, String message) {
