@@ -1,0 +1,233 @@
+[
+  {
+    "hospital_name": "Spitalul Universitar de Urgență București",
+    "hospital_location": "București, Sector 5",
+    "metadata": {
+      "@context": [
+        "https://w3id.org/did/v1"
+      ],
+      "id": "",
+      "version": "4.1.0",
+      "chainId": 11155111,
+      "nftAddress": "",
+      "metadata": {
+        "created": "2025-07-30T13:10:10.665Z",
+        "updated": "2025-07-30T13:10:10.665Z",
+        "type": "dataset",
+        "name": "Spitalul Universitar de Urgență București - Emergency Capacity Data",
+        "description": "Real-time emergency bed capacity and resources for Spitalul Universitar de Urgență București",
+        "author": "0xfE3a6E5837320A4244af773a3CB429a8a380DCe8",
+        "license": "Private",
+        "tags": [
+          "hospital",
+          "emergency",
+          "capacity",
+          "romania",
+          "healthcare"
+        ],
+        "additionalInformation": {
+          "hospital_name": "Spitalul Universitar de Urgență București",
+          "location": "București, Sector 5",
+          "data_type": "emergency_capacity",
+          "update_frequency": "hourly",
+          "categories": [
+            "healthcare"
+          ],
+          "termsAndConditions": true
+        }
+      },
+      "services": [
+        {
+          "id": "compute",
+          "type": "compute",
+          "files": [
+            {
+              "type": "url",
+              "url": "data:application/json;base64,eyJob3NwaXRhbF9pZCI6InNwaXRhbF91cmdlbnRhX2J1Y3VyZXN0aSIsImljdV9iZWRzX2F2YWlsYWJsZSI6NSwiZW1lcmdlbmN5X2JlZHNfYXZhaWxhYmxlIjoxMiwidmVudGlsYXRvcnNfYXZhaWxhYmxlIjozLCJoYXNfY2FyZGlhY19zdXJnZXJ5Ijp0cnVlLCJoYXNfdHJhdW1hX2NlbnRlciI6dHJ1ZSwiYXZlcmFnZV93YWl0X3RpbWVfbWludXRlcyI6MjUsImxvY2F0aW9uIjp7ImxhdCI6NDQuNDI2OCwibG5nIjoyNi4xMDI1fSwibGFzdF91cGRhdGVkIjoiMjAyNS0wNy0zMFQxMzoxMDoxMC42NjNaIn0=",
+              "method": "GET"
+            }
+          ],
+          "datatokenAddress": "",
+          "serviceEndpoint": "https://2.c2d.nodes.oceanprotocol.com:8000/api/services/compute",
+          "timeout": 3600,
+          "compute": {
+            "allowRawAlgorithm": false,
+            "allowNetworkAccess": false,
+            "publisherTrustedAlgorithms": [],
+            "publisherTrustedAlgorithmPublishers": []
+          }
+        }
+      ]
+    },
+    "sample_data": {
+      "hospital_id": "spital_urgenta_bucuresti",
+      "icu_beds_available": 5,
+      "emergency_beds_available": 12,
+      "ventilators_available": 3,
+      "has_cardiac_surgery": true,
+      "has_trauma_center": true,
+      "average_wait_time_minutes": 25,
+      "location": {
+        "lat": 44.4268,
+        "lng": 26.1025
+      },
+      "last_updated": "2025-07-30T13:10:10.663Z"
+    },
+    "created_at": "2025-07-30T13:10:10.665Z",
+    "status": "prepared"
+  },
+  {
+    "hospital_name": "Spitalul Județean Cluj",
+    "hospital_location": "Cluj-Napoca, Cluj",
+    "metadata": {
+      "@context": [
+        "https://w3id.org/did/v1"
+      ],
+      "id": "",
+      "version": "4.1.0",
+      "chainId": 11155111,
+      "nftAddress": "",
+      "metadata": {
+        "created": "2025-07-30T13:10:10.666Z",
+        "updated": "2025-07-30T13:10:10.666Z",
+        "type": "dataset",
+        "name": "Spitalul Județean Cluj - Emergency Capacity Data",
+        "description": "Real-time emergency bed capacity and resources for Spitalul Județean Cluj",
+        "author": "0xfE3a6E5837320A4244af773a3CB429a8a380DCe8",
+        "license": "Private",
+        "tags": [
+          "hospital",
+          "emergency",
+          "capacity",
+          "romania",
+          "healthcare"
+        ],
+        "additionalInformation": {
+          "hospital_name": "Spitalul Județean Cluj",
+          "location": "Cluj-Napoca, Cluj",
+          "data_type": "emergency_capacity",
+          "update_frequency": "hourly",
+          "categories": [
+            "healthcare"
+          ],
+          "termsAndConditions": true
+        }
+      },
+      "services": [
+        {
+          "id": "compute",
+          "type": "compute",
+          "files": [
+            {
+              "type": "url",
+              "url": "data:application/json;base64,eyJob3NwaXRhbF9pZCI6InNwaXRhbF9qdWRldGVhbl9jbHVqIiwiaWN1X2JlZHNfYXZhaWxhYmxlIjo4LCJlbWVyZ2VuY3lfYmVkc19hdmFpbGFibGUiOjE1LCJ2ZW50aWxhdG9yc19hdmFpbGFibGUiOjUsImhhc19jYXJkaWFjX3N1cmdlcnkiOnRydWUsImhhc190cmF1bWFfY2VudGVyIjp0cnVlLCJhdmVyYWdlX3dhaXRfdGltZV9taW51dGVzIjoxOCwibG9jYXRpb24iOnsibGF0Ijo0Ni43NzEyLCJsbmciOjIzLjYyMzZ9LCJsYXN0X3VwZGF0ZWQiOiIyMDI1LTA3LTMwVDEzOjEwOjEwLjY2NVoifQ==",
+              "method": "GET"
+            }
+          ],
+          "datatokenAddress": "",
+          "serviceEndpoint": "https://2.c2d.nodes.oceanprotocol.com:8000/api/services/compute",
+          "timeout": 3600,
+          "compute": {
+            "allowRawAlgorithm": false,
+            "allowNetworkAccess": false,
+            "publisherTrustedAlgorithms": [],
+            "publisherTrustedAlgorithmPublishers": []
+          }
+        }
+      ]
+    },
+    "sample_data": {
+      "hospital_id": "spital_judetean_cluj",
+      "icu_beds_available": 8,
+      "emergency_beds_available": 15,
+      "ventilators_available": 5,
+      "has_cardiac_surgery": true,
+      "has_trauma_center": true,
+      "average_wait_time_minutes": 18,
+      "location": {
+        "lat": 46.7712,
+        "lng": 23.6236
+      },
+      "last_updated": "2025-07-30T13:10:10.665Z"
+    },
+    "created_at": "2025-07-30T13:10:10.666Z",
+    "status": "prepared"
+  },
+  {
+    "hospital_name": "Spitalul Regina Maria București",
+    "hospital_location": "București, Sector 1",
+    "metadata": {
+      "@context": [
+        "https://w3id.org/did/v1"
+      ],
+      "id": "",
+      "version": "4.1.0",
+      "chainId": 11155111,
+      "nftAddress": "",
+      "metadata": {
+        "created": "2025-07-30T13:10:10.666Z",
+        "updated": "2025-07-30T13:10:10.666Z",
+        "type": "dataset",
+        "name": "Spitalul Regina Maria București - Emergency Capacity Data",
+        "description": "Real-time emergency bed capacity and resources for Spitalul Regina Maria București",
+        "author": "0xfE3a6E5837320A4244af773a3CB429a8a380DCe8",
+        "license": "Private",
+        "tags": [
+          "hospital",
+          "emergency",
+          "capacity",
+          "romania",
+          "healthcare"
+        ],
+        "additionalInformation": {
+          "hospital_name": "Spitalul Regina Maria București",
+          "location": "București, Sector 1",
+          "data_type": "emergency_capacity",
+          "update_frequency": "hourly",
+          "categories": [
+            "healthcare"
+          ],
+          "termsAndConditions": true
+        }
+      },
+      "services": [
+        {
+          "id": "compute",
+          "type": "compute",
+          "files": [
+            {
+              "type": "url",
+              "url": "data:application/json;base64,eyJob3NwaXRhbF9pZCI6InJlZ2luYV9tYXJpYV9idWN1cmVzdGkiLCJpY3VfYmVkc19hdmFpbGFibGUiOjMsImVtZXJnZW5jeV9iZWRzX2F2YWlsYWJsZSI6OCwidmVudGlsYXRvcnNfYXZhaWxhYmxlIjoyLCJoYXNfY2FyZGlhY19zdXJnZXJ5Ijp0cnVlLCJoYXNfdHJhdW1hX2NlbnRlciI6ZmFsc2UsImF2ZXJhZ2Vfd2FpdF90aW1lX21pbnV0ZXMiOjE1LCJsb2NhdGlvbiI6eyJsYXQiOjQ0LjQzNzgsImxuZyI6MjYuMDg3NX0sImxhc3RfdXBkYXRlZCI6IjIwMjUtMDctMzBUMTM6MTA6MTAuNjY1WiJ9",
+              "method": "GET"
+            }
+          ],
+          "datatokenAddress": "",
+          "serviceEndpoint": "https://2.c2d.nodes.oceanprotocol.com:8000/api/services/compute",
+          "timeout": 3600,
+          "compute": {
+            "allowRawAlgorithm": false,
+            "allowNetworkAccess": false,
+            "publisherTrustedAlgorithms": [],
+            "publisherTrustedAlgorithmPublishers": []
+          }
+        }
+      ]
+    },
+    "sample_data": {
+      "hospital_id": "regina_maria_bucuresti",
+      "icu_beds_available": 3,
+      "emergency_beds_available": 8,
+      "ventilators_available": 2,
+      "has_cardiac_surgery": true,
+      "has_trauma_center": false,
+      "average_wait_time_minutes": 15,
+      "location": {
+        "lat": 44.4378,
+        "lng": 26.0875
+      },
+      "last_updated": "2025-07-30T13:10:10.665Z"
+    },
+    "created_at": "2025-07-30T13:10:10.666Z",
+    "status": "prepared"
+  }
+]

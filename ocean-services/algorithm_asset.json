@@ -1,0 +1,61 @@
+{
+  "name": "Emergency Hospital Matching Algorithm",
+  "metadata": {
+    "@context": [
+      "https://w3id.org/did/v1"
+    ],
+    "id": "",
+    "version": "4.1.0",
+    "chainId": 11155111,
+    "metadata": {
+      "created": "2025-07-30T13:12:19.460Z",
+      "updated": "2025-07-30T13:12:19.462Z",
+      "type": "algorithm",
+      "name": "Emergency Hospital Matching Algorithm",
+      "description": "AI algorithm that matches emergency cases with optimal hospitals based on distance, capacity, and specialization",
+      "author": "0xfE3a6E5837320A4244af773a3CB429a8a380DCe8",
+      "license": "MIT",
+      "tags": [
+        "ai",
+        "emergency",
+        "matching",
+        "algorithm",
+        "healthcare"
+      ],
+      "algorithm": {
+        "language": "python",
+        "format": "docker-image",
+        "version": "1.0",
+        "container": {
+          "entrypoint": "python algorithm.py",
+          "image": "python:3.9-slim",
+          "tag": "latest"
+        }
+      }
+    },
+    "services": [
+      {
+        "id": "compute",
+        "type": "compute",
+        "files": [
+          {
+            "type": "url",
+            "url": "data:text/plain;base64,CmltcG9ydCBqc29uCmltcG9ydCBtYXRoCmltcG9ydCBzeXMKCmRlZiBjYWxjdWxhdGVfZGlzdGFuY2UobGF0MSwgbG9uMSwgbGF0MiwgbG9uMik6CiAgICAiIiJDYWxjdWxhdGUgZGlzdGFuY2UgYmV0d2VlbiB0d28gcG9pbnRzIGluIGtpbG9tZXRlcnMiIiIKICAgIFIgPSA2MzcxICAjIEVhcnRoJ3MgcmFkaXVzIGluIGtpbG9tZXRlcnMKICAgIGRsYXQgPSBtYXRoLnJhZGlhbnMobGF0MiAtIGxhdDEpCiAgICBkbG9uID0gbWF0aC5yYWRpYW5zKGxvbjIgLSBsb24xKQogICAgYSA9IChtYXRoLnNpbihkbGF0LzIpICogbWF0aC5zaW4oZGxhdC8yKSArCiAgICAgICAgIG1hdGguY29zKG1hdGgucmFkaWFucyhsYXQxKSkgKiBtYXRoLmNvcyhtYXRoLnJhZGlhbnMobGF0MikpICoKICAgICAgICAgbWF0aC5zaW4oZGxvbi8yKSAqIG1hdGguc2luKGRsb24vMikpCiAgICBjID0gMiAqIG1hdGguYXRhbjIobWF0aC5zcXJ0KGEpLCBtYXRoLnNxcnQoMS1hKSkKICAgIHJldHVybiBSICogYwoKZGVmIGVtZXJnZW5jeV9tYXRjaGluZ19hbGdvcml0aG0oaG9zcGl0YWxzLCBlbWVyZ2VuY3kpOgogICAgIiIiCiAgICBBSSBhbGdvcml0aG0gdGhhdCBtYXRjaGVzIGVtZXJnZW5jeSB3aXRoIGJlc3QgaG9zcGl0YWwKICAgIFJldHVybnMgdGhlIGhvc3BpdGFsIHdpdGggaGlnaGVzdCBtYXRjaGluZyBzY29yZQogICAgIiIiCiAgICBiZXN0X2hvc3BpdGFsID0gTm9uZQogICAgYmVzdF9zY29yZSA9IDAKICAgIAogICAgZW1lcmdlbmN5X2xhdCA9IGVtZXJnZW5jeVsnbG9jYXRpb24nXVsnbGF0J10KICAgIGVtZXJnZW5jeV9sbmcgPSBlbWVyZ2VuY3lbJ2xvY2F0aW9uJ11bJ2xuZyddCiAgICBlbWVyZ2VuY3lfc2V2ZXJpdHkgPSBlbWVyZ2VuY3lbJ3NldmVyaXR5J10KICAgIAogICAgcmVzdWx0cyA9IFtdCiAgICAKICAgIGZvciBob3NwaXRhbCBpbiBob3NwaXRhbHM6CiAgICAgICAgc2NvcmUgPSAwCiAgICAgICAgCiAgICAgICAgIyBEaXN0YW5jZSBmYWN0b3IgKGNsb3NlciBpcyBiZXR0ZXIsIG1heCA1MCBwb2ludHMpCiAgICAgICAgZGlzdGFuY2UgPSBjYWxjdWxhdGVfZGlzdGFuY2UoCiAgICAgICAgICAgIGVtZXJnZW5jeV9sYXQsIGVtZXJnZW5jeV9sbmcsCiAgICAgICAgICAgIGhvc3BpdGFsWydsb2NhdGlvbiddWydsYXQnXSwgaG9zcGl0YWxbJ2xvY2F0aW9uJ11bJ2xuZyddCiAgICAgICAgKQogICAgICAgIGRpc3RhbmNlX3Njb3JlID0gbWF4KDAsIDUwIC0gZGlzdGFuY2UpCiAgICAgICAgc2NvcmUgKz0gZGlzdGFuY2Vfc2NvcmUKICAgICAgICAKICAgICAgICAjIENhcGFjaXR5IGZhY3RvcgogICAgICAgIGlmIGVtZXJnZW5jeV9zZXZlcml0eSA+PSA4OiAgIyBDcml0aWNhbCBlbWVyZ2VuY3kKICAgICAgICAgICAgaWYgaG9zcGl0YWxbJ2ljdV9iZWRzX2F2YWlsYWJsZSddID4gMDoKICAgICAgICAgICAgICAgIHNjb3JlICs9IDMwCiAgICAgICAgICAgIGlmIGhvc3BpdGFsWydoYXNfY2FyZGlhY19zdXJnZXJ5J106CiAgICAgICAgICAgICAgICBzY29yZSArPSAyMAogICAgICAgIGVsc2U6ICAjIFJlZ3VsYXIgZW1lcmdlbmN5CiAgICAgICAgICAgIGlmIGhvc3BpdGFsWydlbWVyZ2VuY3lfYmVkc19hdmFpbGFibGUnXSA+IDA6CiAgICAgICAgICAgICAgICBzY29yZSArPSAyNQogICAgICAgIAogICAgICAgICMgV2FpdCB0aW1lIGZhY3RvciAoc2hvcnRlciB3YWl0IGlzIGJldHRlciwgbWF4IDMwIHBvaW50cykKICAgICAgICB3YWl0X3RpbWVfc2NvcmUgPSBtYXgoMCwgMzAgLSBob3NwaXRhbFsnYXZlcmFnZV93YWl0X3RpbWVfbWludXRlcyddKQogICAgICAgIHNjb3JlICs9IHdhaXRfdGltZV9zY29yZQogICAgICAgIAogICAgICAgICMgU3BlY2lhbGl6YXRpb24gZmFjdG9yCiAgICAgICAgaWYgaG9zcGl0YWxbJ2hhc190cmF1bWFfY2VudGVyJ106CiAgICAgICAgICAgIHNjb3JlICs9IDE1CiAgICAgICAgCiAgICAgICAgcmVzdWx0cy5hcHBlbmQoewogICAgICAgICAgICAnaG9zcGl0YWxfaWQnOiBob3NwaXRhbFsnaG9zcGl0YWxfaWQnXSwKICAgICAgICAgICAgJ3Njb3JlJzogc2NvcmUsCiAgICAgICAgICAgICdkaXN0YW5jZV9rbSc6IGRpc3RhbmNlLAogICAgICAgICAgICAncmVhc29uaW5nJzogZiJEaXN0YW5jZToge2Rpc3RhbmNlOi4xZn1rbSwgQ2FwYWNpdHk6IHtob3NwaXRhbFsnaWN1X2JlZHNfYXZhaWxhYmxlJ119SUNVL3tob3NwaXRhbFsnZW1lcmdlbmN5X2JlZHNfYXZhaWxhYmxlJ119RVIsIFdhaXQ6IHtob3NwaXRhbFsnYXZlcmFnZV93YWl0X3RpbWVfbWludXRlcyddfW1pbiIKICAgICAgICB9KQogICAgICAgIAogICAgICAgIGlmIHNjb3JlID4gYmVzdF9zY29yZToKICAgICAgICAgICAgYmVzdF9zY29yZSA9IHNjb3JlCiAgICAgICAgICAgIGJlc3RfaG9zcGl0YWwgPSBob3NwaXRhbAogICAgCiAgICByZXR1cm4gewogICAgICAgICdtYXRjaGVkX2hvc3BpdGFsX2lkJzogYmVzdF9ob3NwaXRhbFsnaG9zcGl0YWxfaWQnXSBpZiBiZXN0X2hvc3BpdGFsIGVsc2UgTm9uZSwKICAgICAgICAnbWF0Y2hfc2NvcmUnOiBiZXN0X3Njb3JlLAogICAgICAgICdkaXN0YW5jZV9rbSc6IGNhbGN1bGF0ZV9kaXN0YW5jZSgKICAgICAgICAgICAgZW1lcmdlbmN5X2xhdCwgZW1lcmdlbmN5X2xuZywKICAgICAgICAgICAgYmVzdF9ob3NwaXRhbFsnbG9jYXRpb24nXVsnbGF0J10sIGJlc3RfaG9zcGl0YWxbJ2xvY2F0aW9uJ11bJ2xuZyddCiAgICAgICAgKSBpZiBiZXN0X2hvc3BpdGFsIGVsc2UgMCwKICAgICAgICAnYWxsX2hvc3BpdGFscyc6IHJlc3VsdHMsCiAgICAgICAgJ3JlYXNvbmluZyc6ICdTZWxlY3RlZCBiYXNlZCBvbiBkaXN0YW5jZSwgY2FwYWNpdHksIHdhaXQgdGltZSwgYW5kIHNwZWNpYWxpemF0aW9uJywKICAgICAgICAnZW1lcmdlbmN5X3NldmVyaXR5JzogZW1lcmdlbmN5X3NldmVyaXR5CiAgICB9CgojIE1haW4gZXhlY3V0aW9uCmlmIF9fbmFtZV9fID09ICJfX21haW5fXyI6CiAgICAjIFJlYWQgaW5wdXQgZGF0YSBmcm9tIGNvbW1hbmQgbGluZSBhcmd1bWVudHMKICAgIGhvc3BpdGFsc19kYXRhID0ganNvbi5sb2FkcyhzeXMuYXJndlsxXSkKICAgIGVtZXJnZW5jeV9kYXRhID0ganNvbi5sb2FkcyhzeXMuYXJndlsyXSkKICAgIAogICAgIyBSdW4gbWF0Y2hpbmcgYWxnb3JpdGhtCiAgICByZXN1bHQgPSBlbWVyZ2VuY3lfbWF0Y2hpbmdfYWxnb3JpdGhtKGhvc3BpdGFsc19kYXRhLCBlbWVyZ2VuY3lfZGF0YSkKICAgIAogICAgIyBPdXRwdXQgcmVzdWx0IGFzIEpTT04KICAgIHByaW50KGpzb24uZHVtcHMocmVzdWx0LCBpbmRlbnQ9MikpCg==",
+            "method": "GET"
+          }
+        ],
+        "datatokenAddress": "",
+        "serviceEndpoint": "https://2.c2d.nodes.oceanprotocol.com:8000/api/services/compute",
+        "timeout": 3600,
+        "compute": {
+          "allowRawAlgorithm": true,
+          "allowNetworkAccess": false,
+          "publisherTrustedAlgorithms": []
+        }
+      }
+    ]
+  },
+  "algorithm_code": "\nimport json\nimport math\nimport sys\n\ndef calculate_distance(lat1, lon1, lat2, lon2):\n    \"\"\"Calculate distance between two points in kilometers\"\"\"\n    R = 6371  # Earth's radius in kilometers\n    dlat = math.radians(lat2 - lat1)\n    dlon = math.radians(lon2 - lon1)\n    a = (math.sin(dlat/2) * math.sin(dlat/2) +\n         math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *\n         math.sin(dlon/2) * math.sin(dlon/2))\n    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))\n    return R * c\n\ndef emergency_matching_algorithm(hospitals, emergency):\n    \"\"\"\n    AI algorithm that matches emergency with best hospital\n    Returns the hospital with highest matching score\n    \"\"\"\n    best_hospital = None\n    best_score = 0\n    \n    emergency_lat = emergency['location']['lat']\n    emergency_lng = emergency['location']['lng']\n    emergency_severity = emergency['severity']\n    \n    results = []\n    \n    for hospital in hospitals:\n        score = 0\n        \n        # Distance factor (closer is better, max 50 points)\n        distance = calculate_distance(\n            emergency_lat, emergency_lng,\n            hospital['location']['lat'], hospital['location']['lng']\n        )\n        distance_score = max(0, 50 - distance)\n        score += distance_score\n        \n        # Capacity factor\n        if emergency_severity >= 8:  # Critical emergency\n            if hospital['icu_beds_available'] > 0:\n                score += 30\n            if hospital['has_cardiac_surgery']:\n                score += 20\n        else:  # Regular emergency\n            if hospital['emergency_beds_available'] > 0:\n                score += 25\n        \n        # Wait time factor (shorter wait is better, max 30 points)\n        wait_time_score = max(0, 30 - hospital['average_wait_time_minutes'])\n        score += wait_time_score\n        \n        # Specialization factor\n        if hospital['has_trauma_center']:\n            score += 15\n        \n        results.append({\n            'hospital_id': hospital['hospital_id'],\n            'score': score,\n            'distance_km': distance,\n            'reasoning': f\"Distance: {distance:.1f}km, Capacity: {hospital['icu_beds_available']}ICU/{hospital['emergency_beds_available']}ER, Wait: {hospital['average_wait_time_minutes']}min\"\n        })\n        \n        if score > best_score:\n            best_score = score\n            best_hospital = hospital\n    \n    return {\n        'matched_hospital_id': best_hospital['hospital_id'] if best_hospital else None,\n        'match_score': best_score,\n        'distance_km': calculate_distance(\n            emergency_lat, emergency_lng,\n            best_hospital['location']['lat'], best_hospital['location']['lng']\n        ) if best_hospital else 0,\n        'all_hospitals': results,\n        'reasoning': 'Selected based on distance, capacity, wait time, and specialization',\n        'emergency_severity': emergency_severity\n    }\n\n# Main execution\nif __name__ == \"__main__\":\n    # Read input data from command line arguments\n    hospitals_data = json.loads(sys.argv[1])\n    emergency_data = json.loads(sys.argv[2])\n    \n    # Run matching algorithm\n    result = emergency_matching_algorithm(hospitals_data, emergency_data)\n    \n    # Output result as JSON\n    print(json.dumps(result, indent=2))\n",
+  "created_at": "2025-07-30T13:12:19.462Z",
+  "status": "prepared"
+}

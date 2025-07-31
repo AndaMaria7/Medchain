@@ -1,0 +1,222 @@
+@prefix dash: <http://datashapes.org/dash#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://www.w3.org/ns/credentials/v2/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Root shape for VerifiableCredential
+schema:VerifiableCredentialShape
+    sh:targetClass schema:VerifiableCredential ;
+    sh:property [
+        sh:path schema:id ;
+        sh:datatype xsd:string ;
+        sh:pattern "^did\\:ope\\:(.*)$" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:maxLength 72 ;
+        sh:minLength 72 ;
+    ] ;
+    sh:property [
+        sh:path schema:type ;
+        sh:nodeKind sh:Literal ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:credentialSubject ;
+        sh:node schema:CredentialSubjectShape ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:issuer ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:version ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:additionalDdos ;
+        sh:node schema:AdditionalDdosShape ;
+        sh:maxCount 64 ;
+    ] .
+
+# Shape for CredentialSubject
+schema:CredentialSubjectShape
+    sh:targetClass schema:CredentialSubject ;
+    sh:property [
+        sh:path schema:metadata ;
+        sh:node schema:MetadataShape ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:services ;
+        sh:node schema:ServiceShape ;
+        sh:minCount 1 ;
+        sh:maxCount 64 ;
+    ] ;
+    sh:property [
+        sh:path schema:credentials ;
+        sh:node schema:CredentialsShape ;
+        sh:maxCount 64 ;
+    ] ;
+    sh:property [
+        sh:path schema:chainId ;
+        sh:datatype xsd:integer ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:nftAddress ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minLength 42 ;
+        sh:maxLength 42 ;
+    ] ;
+    sh:property [
+        sh:path schema:event ;
+        sh:node schema:EventShape ;
+        sh:maxCount 1 ;
+    ] .
+
+# Shape for Metadata
+schema:MetadataShape
+    sh:property [
+        sh:path schema:created;
+        sh:datatype xsd:string;
+#       sh:pattern "^[0-9]{4}-((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01])|(0[469]|11)-(0[1-9]|[12][0-9]|30)|(02)-(0[1-9]|[12][0-9]))T(0[0-9]|1[0-9]|2[0-3]):(0[0-9]|[1-5][0-9]):(0[0-9]|[1-5][0-9])(\.[0-9]{3})?Z$" ;
+        sh:minCount 1;
+        sh:maxCount 1;
+    ] ;
+    sh:property [
+        sh:path schema:updated;
+        sh:datatype xsd:string;
+#       sh:pattern "^[0-9]{4}-((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01])|(0[469]|11)-(0[1-9]|[12][0-9]|30)|(02)-(0[1-9]|[12][0-9]))T(0[0-9]|1[0-9]|2[0-3]):(0[0-9]|[1-5][0-9]):(0[0-9]|[1-5][0-9])(\.[0-9]{3})?Z$" ;
+        sh:minCount 1;
+        sh:maxCount 1;
+    ] ;
+    sh:property [
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:providedBy ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:tags ;
+        sh:datatype xsd:string ;
+        sh:maxCount 64 ;
+    ] ;
+    sh:property [
+        sh:path schema:additionalInformation ;
+        sh:nodeKind sh:BlankNodeOrIRI ;
+    ] .
+
+# Shape for Services
+schema:ServiceShape
+    sh:property [
+        sh:path schema:id ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:type ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:datatokenAddress ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:serviceEndpoint ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:timeout ;
+        sh:datatype xsd:integer ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] .
+
+# Shape for Event
+schema:EventShape
+    sh:property [
+        sh:path schema:txid ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:block ;
+        sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:from ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:contract ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:datetime ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1 ;
+    ] .
+
+# Shape for LanguageValue
+schema:LanguageValueShape
+    sh:property [
+        sh:path schema:value ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:language ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:direction ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1 ;
+    ] .
+
+# Shape for AdditionalDdos
+schema:AdditionalDdosShape
+    sh:property [
+        sh:path schema:type ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:data ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+    ] .
