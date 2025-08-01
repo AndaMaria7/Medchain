@@ -131,7 +131,14 @@ contract HospitalRegistry is Ownable {
         uint256 emergencyBeds,
         uint256 ventilators
     ) external onlyAuthorizedUpdater(msg.sender) {
-        require(bytes(hospitals[msg.sender].name).length > 0, "Hospital not registered");
+        // Auto-register hospital if not already registered
+        if (bytes(hospitals[msg.sender].name).length == 0) {
+            hospitals[msg.sender].name = "Auto-registered Hospital";
+            hospitals[msg.sender].location = "Unknown Location";
+            hospitals[msg.sender].phoneNumber = "";
+            hospitals[msg.sender].verified = false;
+            hospitalAddresses.push(msg.sender);
+        }
         
         HospitalCapacity storage hospital = hospitals[msg.sender];
         hospital.icuBeds = icuBeds;
@@ -282,8 +289,15 @@ contract HospitalRegistry is Ownable {
         string[] memory specialistTypes,
         uint256[] memory counts
     ) external onlyAuthorizedUpdater(msg.sender) {
-        require(bytes(hospitals[msg.sender].name).length > 0, "Hospital not registered");
         require(specialistTypes.length == counts.length, "Arrays length mismatch");
+        
+        if (bytes(hospitals[msg.sender].name).length == 0) {
+            hospitals[msg.sender].name = "Auto-registered Hospital";
+            hospitals[msg.sender].location = "Unknown Location";
+            hospitals[msg.sender].phoneNumber = "";
+            hospitals[msg.sender].verified = false;
+            hospitalAddresses.push(msg.sender);
+        }
         
         HospitalCapacity storage hospital = hospitals[msg.sender];
         hospital.personnelLastUpdated = block.timestamp;

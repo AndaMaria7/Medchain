@@ -119,7 +119,6 @@ contract EmergencyCoordinator is Ownable, ReentrancyGuard {
     ) external emergencyExists(emergencyId) nonReentrant {
         Emergency storage emergency = emergencies[emergencyId];
         
-        // Only patient or contract owner can update
         require(
             msg.sender == emergency.patient || msg.sender == owner(),
             "Not authorized to update this emergency"
@@ -147,7 +146,6 @@ contract EmergencyCoordinator is Ownable, ReentrancyGuard {
     {
         Emergency storage emergency = emergencies[emergencyId];
         
-        // Check if hospital is the matched one
         require(
             keccak256(bytes(hospitals[msg.sender].hospitalId)) == 
             keccak256(bytes(emergency.matchedHospitalId)),

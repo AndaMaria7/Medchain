@@ -24,59 +24,77 @@ class _EmergencyButtonState extends State<EmergencyButton> {
   Widget build(BuildContext context) {
     return Consumer<EmergencyProvider>(
       builder: (context, emergencyProvider, child) {
-        return Container(
-          width: double.infinity,
-          height: 80,
-          child: ElevatedButton(
-            onPressed: _isProcessing || emergencyProvider.isLoading 
-                ? null 
-                : () => _handleEmergencyPress(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[600],
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 8,
+        return Center(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: 180,
+            height: 180,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.5),
+                  spreadRadius: _isProcessing || emergencyProvider.isLoading ? 15 : 5,
+                  blurRadius: _isProcessing || emergencyProvider.isLoading ? 25 : 15,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
-            child: _isProcessing || emergencyProvider.isLoading
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
+            child: ElevatedButton(
+              onPressed: _isProcessing || emergencyProvider.isLoading 
+                  ? null 
+                  : () => _handleEmergencyPress(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[600],
+                foregroundColor: Colors.white,
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(24),
+                elevation: 8,
+              ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _isProcessing || emergencyProvider.isLoading
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          width: 30,
+                          height: 30,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 3,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        _isProcessing 
-                            ? 'Getting Location...' 
-                            : 'Finding Hospitals...',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                        const SizedBox(height: 10),
+                        Text(
+                          _isProcessing 
+                              ? 'Getting\nLocation' 
+                              : 'Finding\nHospitals',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.emergency, size: 28),
-                      const SizedBox(width: 12),
-                      Text(
-                        'EMERGENCY - ${widget.emergencyType.toUpperCase()}',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      ],
+                    )
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.emergency, size: 40),
+                        const SizedBox(height: 8),
+                        Text(
+                          widget.emergencyType.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+              ),
+            ),
           ),
         );
       },

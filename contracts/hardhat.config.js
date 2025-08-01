@@ -12,9 +12,10 @@ module.exports = {
       chainId: 421613,
     },
     sepolia: {
-      url: "https://eth-sepolia.g.alchemy.com/v2/demo",
+      url: "https://eth-sepolia.public.blastapi.io",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 11155111,
+      timeout: 60000, // 60 seconds timeout
     },
   },
 };

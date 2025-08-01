@@ -27,8 +27,13 @@ class WalletService extends ChangeNotifier {
   bool get isConnected => _isConnected;
   bool get isLoading => _isLoading;
   
-  // RPC URL - Using local Hardhat network
-  final String _rpcUrl = "http://127.0.0.1:8545";
+  // RPC URL - Using Sepolia testnet (public endpoint, no API key required)
+  final String _rpcUrl = "https://eth-sepolia.public.blastapi.io";
+  
+  // Contract owner private key - this should match your Sepolia wallet private key
+  // This account is needed to register hospitals as only the owner can do this
+  // The private key should be the same as in your .env file
+  final String _ownerPrivateKey = "0x02e00c7415385db8ee2603ddabc450c3266f68788077453d0057301ec3cc1d15";
   
   // Contract address - will be loaded from assets
   String? _contractAddress;
@@ -41,7 +46,9 @@ class WalletService extends ChangeNotifier {
     
     _web3client = Web3Client(_rpcUrl, http.Client());
     await _loadContractData();
-    await _restoreSession();
+    
+    // Clear any existing session to ensure we use the correct private key
+    await _clearSession();
     
     _isInitialized = true;
     notifyListeners();
@@ -50,10 +57,11 @@ class WalletService extends ChangeNotifier {
   // Load contract ABI and address
   Future<void> _loadContractData() async {
     try {
-      // Load contract address
-      final addressFile = await rootBundle.loadString('assets/contract-address/hospital-registry-address.json');
+      // Load contract address for Sepolia
+      final addressFile = await rootBundle.loadString('assets/contract-address/hospital-registry-address-sepolia.json');
       final addressJson = jsonDecode(addressFile);
       _contractAddress = addressJson['address'];
+      print('DEBUG: Loaded contract address: $_contractAddress');
       
       // Load contract ABI
       final abiFile = await rootBundle.loadString('assets/contracts/HospitalRegistry.json');
@@ -69,29 +77,60 @@ class WalletService extends ChangeNotifier {
     }
   }
   
+  // Initialize contract if not already initialized
+  Future<void> _initializeContract() async {
+    if (_contract == null) {
+      await _loadContractData();
+    }
+  }
+  
   // Connect wallet using a private key (for demo purposes)
   // In a real app, you would use a more secure method like MetaMask integration
   Future<bool> connectWallet({String? privateKey}) async {
-    _setLoading(true);
-    
     try {
-      // Use a pre-funded Hardhat account for local testing
-      // This is the first account created by Hardhat node with 10,000 ETH
-      final pk = privateKey ?? '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
+      _setLoading(true);
       
-      // Create credentials from private key
-      final credentials = EthPrivateKey.fromHex(pk);
-      _credentials = credentials;
+      // Ensure we're initialized
+      if (!_isInitialized) {
+        await initialize();
+      }
+      
+      // Use provided private key or use the one from .env file
+      String? key = privateKey;
+      if (key == null || key.isEmpty) {
+        // Use the private key from .env file
+        key = '0x02e00c7415385db8ee2603ddabc450c3266f68788077453d0057301ec3cc1d15'; // Replace with your actual funded Sepolia private key
+        print('DEBUG: Using default private key');
+      } else {
+        print('DEBUG: Using provided private key');
+      }
+      
+      // Clean up the key if needed
+      if (!key.startsWith('0x')) {
+        key = '0x$key';
+      }
+      
+      print('DEBUG: Using private key: ${key.substring(0, 6)}...${key.substring(key.length - 4)}');
+      
+      // Create credentials
+      _credentials = EthPrivateKey.fromHex(key);
       
       // Get wallet address
-      final address = await credentials.extractAddress();
+      final address = await _credentials!.extractAddress();
       _walletAddress = address.hex;
+      print('DEBUG: Wallet address: $_walletAddress');
+      
+      // Check wallet balance
+      final balance = await _web3client.getBalance(address);
+      print('DEBUG: Initial wallet balance: ${balance.getValueInUnit(EtherUnit.ether)} ETH');
+      
+      // Save to preferences
+      await _saveSession(key);
       
       _isConnected = true;
-      await _saveSession(pk);
+      _setLoading(false);
       notifyListeners();
       
-      _setLoading(false);
       return true;
     } catch (e) {
       print('Error connecting wallet: $e');
@@ -118,16 +157,7 @@ class WalletService extends ChangeNotifier {
     await prefs.setString('private_key', privateKey);
   }
   
-  // Restore session from preferences
-  Future<void> _restoreSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedAddress = prefs.getString('wallet_address');
-    final savedKey = prefs.getString('private_key');
-    
-    if (savedAddress != null && savedAddress.isNotEmpty && savedKey != null) {
-      await connectWallet(privateKey: savedKey);
-    }
-  }
+  // Method removed as we're not restoring sessions automatically anymore
   
   // Clear session from preferences
   Future<void> _clearSession() async {
@@ -207,6 +237,70 @@ class WalletService extends ChangeNotifier {
     }
   }
   
+  // Register the current wallet as a hospital
+  // This function uses the contract owner's private key since only the owner can register hospitals
+  Future<Map<String, dynamic>> registerHospital({
+    required String name,
+    required String location,
+    required List<String> specializations,
+    required String phoneNumber,
+  }) async {
+    try {
+      print('DEBUG: registerHospital called with name=$name, location=$location');
+      print('DEBUG: specializations=$specializations, phoneNumber=$phoneNumber');
+      
+      if (_contract == null) {
+        print('DEBUG: Contract is null, initializing...');
+        await _initializeContract();
+      }
+      
+      if (_contract == null) {
+        print('DEBUG: Contract still null after initialization');
+        return {'success': false, 'error': 'Contract not initialized'};
+      }
+      
+      if (_walletAddress == null) {
+        print('DEBUG: Wallet address is null');
+        return {'success': false, 'error': 'Wallet not connected'};
+      }
+      
+      print('DEBUG: Using wallet address: $_walletAddress');
+      print('DEBUG: Using owner private key: ${_ownerPrivateKey.substring(0, 6)}...');
+      
+      // Use the owner's private key to register the hospital
+      final ownerCredentials = EthPrivateKey.fromHex(_ownerPrivateKey.startsWith('0x') ? 
+          _ownerPrivateKey.substring(2) : _ownerPrivateKey);
+      
+      // Get the registerHospital function from the contract
+      final function = _contract!.function('registerHospital');
+      print('DEBUG: Got registerHospital function from contract');
+      
+      // Execute the transaction
+      print('DEBUG: Sending transaction to register hospital...');
+      final transaction = await _web3client.sendTransaction(
+        ownerCredentials,
+        Transaction.callContract(
+          contract: _contract!,
+          function: function,
+          parameters: [
+            EthereumAddress.fromHex(_walletAddress!),
+            name,
+            location,
+            specializations,
+            phoneNumber
+          ],
+        ),
+        chainId: 11155111, // Sepolia testnet chain ID
+      );
+      
+      print('DEBUG: Registration transaction sent: $transaction');
+      return {'success': true, 'transactionHash': transaction};
+    } catch (e) {
+      print('Error registering hospital: $e');
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+  
   // Update hospital capacity
   Future<Map<String, dynamic>> updateCapacity(int icuBeds, int emergencyBeds, int ventilators) async {
     try {
@@ -238,6 +332,16 @@ class WalletService extends ChangeNotifier {
         return {'success': false, 'error': 'Wallet credentials not available'};
       }
       
+      // Get gas price and estimate gas
+      final gasPrice = await _web3client.getGasPrice();
+      print('DEBUG: Gas price: ${gasPrice.getValueInUnit(EtherUnit.gwei)} gwei');
+      
+      // Get account balance
+      final address = await _credentials!.extractAddress();
+      final balance = await _web3client.getBalance(address);
+      print('DEBUG: Account balance: ${balance.getValueInUnit(EtherUnit.ether)} ETH');
+      
+      // Create transaction with explicit gas parameters
       final transaction = await _web3client.sendTransaction(
         _credentials!,
         Transaction.callContract(
@@ -248,8 +352,10 @@ class WalletService extends ChangeNotifier {
             BigInt.from(emergencyBeds),
             BigInt.from(ventilators),
           ],
+          maxGas: 300000, // Explicit gas limit
+          gasPrice: gasPrice, // Current gas price
         ),
-        chainId: 31337, // Local Hardhat network chain ID
+        chainId: 11155111, // Sepolia testnet chain ID
       );
       
       return {'success': true, 'transactionHash': transaction};
@@ -299,6 +405,15 @@ class WalletService extends ChangeNotifier {
         return {'success': false, 'error': 'Wallet credentials not available'};
       }
       
+      // Get gas price and estimate gas
+      final gasPrice = await _web3client.getGasPrice();
+      print('DEBUG: Gas price: ${gasPrice.getValueInUnit(EtherUnit.gwei)} gwei');
+      
+      // Get account balance
+      final address = await _credentials!.extractAddress();
+      final balance = await _web3client.getBalance(address);
+      print('DEBUG: Account balance: ${balance.getValueInUnit(EtherUnit.ether)} ETH');
+      
       final transaction = await _web3client.sendTransaction(
         _credentials!,
         Transaction.callContract(
@@ -308,8 +423,10 @@ class WalletService extends ChangeNotifier {
             specialistTypes,
             counts,
           ],
+          maxGas: 300000, // Explicit gas limit
+          gasPrice: gasPrice, // Current gas price
         ),
-        chainId: 31337, // Local Hardhat network chain ID
+        chainId: 11155111, // Sepolia testnet chain ID
       );
       
       return {'success': true, 'transactionHash': transaction};
@@ -351,62 +468,7 @@ class WalletService extends ChangeNotifier {
     }
   }
   
-  // Register a new hospital (only contract owner can do this)
-  Future<Map<String, dynamic>> registerHospital(
-    String hospitalAddress, 
-    String name, 
-    int icuBeds, 
-    int emergencyBeds, 
-    int ventilators,
-    List<String> specializations,
-    String location,
-    String phoneNumber
-  ) async {
-    try {
-      if (!_isConnected) {
-        return {'success': false, 'error': 'Wallet not connected'};
-      }
-      
-      // Ensure contract is initialized
-      if (_contract == null) {
-        await _loadContractData();
-        if (_contract == null) {
-          return {'success': false, 'error': 'Contract not initialized'};
-        }
-      }
-      
-      final function = _contract!.function('registerHospital');
-      
-      // Send transaction
-      if (_credentials == null) {
-        return {'success': false, 'error': 'Wallet credentials not available'};
-      }
-      
-      final transaction = await _web3client.sendTransaction(
-        _credentials!,
-        Transaction.callContract(
-          contract: _contract!,
-          function: function,
-          parameters: [
-            EthereumAddress.fromHex(hospitalAddress),
-            name,
-            BigInt.from(icuBeds),
-            BigInt.from(emergencyBeds),
-            BigInt.from(ventilators),
-            specializations,
-            location,
-            phoneNumber
-          ],
-        ),
-        chainId: 31337, // Local Hardhat network chain ID
-      );
-      
-      return {'success': true, 'transactionHash': transaction};
-    } catch (e) {
-      print('Error registering hospital: $e');
-      return {'success': false, 'error': e.toString()};
-    }
-  }
+  // The duplicate registerHospital function has been removed
   
   // Verify a hospital (only contract owner can do this)
   Future<Map<String, dynamic>> verifyHospital(String hospitalAddress) async {
@@ -437,7 +499,7 @@ class WalletService extends ChangeNotifier {
           function: function,
           parameters: [EthereumAddress.fromHex(hospitalAddress)],
         ),
-        chainId: 31337, // Local Hardhat network chain ID
+        chainId: 11155111, // Sepolia testnet chain ID
       );
       
       return {'success': true, 'transactionHash': transaction};
@@ -529,7 +591,7 @@ class WalletService extends ChangeNotifier {
                   result['jobId'] ?? '', // Ocean job ID
                 ],
               ),
-              chainId: 31337, // Local Hardhat network chain ID
+              chainId: 11155111, // Sepolia testnet chain ID
             );
           }
         } catch (e) {
@@ -584,6 +646,40 @@ class WalletService extends ChangeNotifier {
     } catch (e) {
       print('Error polling emergency results: $e');
       return {'success': false, 'error': e.toString()};
+    }
+  }
+  
+  // Check if the current wallet address is registered as a hospital
+  Future<bool> isHospitalRegistered() async {
+    try {
+      print('DEBUG: Checking if hospital is registered for address: $_walletAddress');
+      
+      if (!_isInitialized) {
+        await initialize();
+      }
+      
+      if (_contract == null) {
+        await _initializeContract();
+      }
+      
+      if (_contract == null || _walletAddress == null) {
+        print('DEBUG: Contract or wallet address is null');
+        return false;
+      }
+      
+      final function = _contract!.function('isHospitalRegistered');
+      final result = await _web3client.call(
+        contract: _contract!,
+        function: function,
+        params: [EthereumAddress.fromHex(_walletAddress!)],
+      );
+      
+      final isRegistered = result[0] as bool;
+      print('DEBUG: Hospital registration status: $isRegistered');
+      return isRegistered;
+    } catch (e) {
+      print('Error checking hospital registration: $e');
+      return false;
     }
   }
   

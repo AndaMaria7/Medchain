@@ -1,11 +1,9 @@
 // utils/contract-interaction.js
-// Utility for interacting with the HospitalRegistry smart contract
 
 const { ethers } = require('ethers');
 const fs = require('fs');
 const path = require('path');
 
-// Load contract ABI and address
 let contractAddress;
 try {
   const addressFile = path.join(__dirname, '../contract-address/hospital-registry-address.json');
@@ -15,7 +13,6 @@ try {
   contractAddress = process.env.HOSPITAL_REGISTRY_ADDRESS;
 }
 
-// Load contract ABI
 const contractABI = require('../artifacts/contracts/HospitalRegistry.sol/HospitalRegistry.json').abi;
 
 class ContractInteraction {
@@ -28,28 +25,22 @@ class ContractInteraction {
     if (privateKey) {
       this.signer = new ethers.Wallet(privateKey, this.provider);
     } else {
-      // Otherwise use the provider's signer (e.g., MetaMask)
       this.signer = this.provider.getSigner();
     }
     
-    // Initialize contract instance
     this.contract = new ethers.Contract(contractAddress, contractABI, this.signer);
   }
 
-  // Connect to wallet (for browser environments)
   async connectWallet() {
     try {
       if (!window.ethereum) {
         throw new Error('No Ethereum provider found. Please install MetaMask or another wallet.');
       }
       
-      // Request account access
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       
-      // Get the connected account
       const account = accounts[0];
       
-      // Update provider and signer
       this.provider = new ethers.providers.Web3Provider(window.ethereum);
       this.signer = this.provider.getSigner();
       this.contract = new ethers.Contract(contractAddress, contractABI, this.signer);
@@ -61,7 +52,6 @@ class ContractInteraction {
     }
   }
 
-  // Get all hospitals
   async getAllHospitals() {
     try {
       const result = await this.contract.getAllHospitals();
@@ -76,7 +66,6 @@ class ContractInteraction {
     }
   }
 
-  // Get available hospitals for emergency
   async getAvailableHospitals(emergencyType, minBeds) {
     try {
       const result = await this.contract.getAvailableHospitals(emergencyType, minBeds);

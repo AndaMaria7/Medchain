@@ -118,7 +118,7 @@ String _getHospitalAddress() {
                     ),
                     const Expanded(
                       child: Text(
-                        'Spital Recomandat',
+                        'Recommended Hospital',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -231,117 +231,107 @@ String _getHospitalAddress() {
                 // Pattern with icons instead of network image
                 color: Colors.blue.shade900.withOpacity(0.3),
               ),
-              child: const Center(
-                child: Icon(
-                  Icons.map,
-                  size: 80,
-                  color: Colors.white10,
-                ),
-              ),
+              // child: const Center(
+              //   child: Icon(
+              //     Icons.map,
+              //     size: 80,
+              //     color: Colors.white10,
+              //   ),
+              // ),
             ),
           ),
           
-          // Content - using SingleChildScrollView to prevent overflow
+          // Content layout with car on right and rest centered
           Padding(
             padding: const EdgeInsets.all(16),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min, // Use min size to prevent overflow
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: const Icon(
-                      Icons.location_on,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    _getHospitalName(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _getHospitalAddress(),
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-             
-                  const SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    onPressed: _navigateToHospital,
-                    icon: const Icon(Icons.directions, size: 16),
-                    label: const Text('Open in Maps', style: TextStyle(fontSize: 12)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.blue[800],
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      minimumSize: const Size(120, 36),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Car indicator in right corner
+                if (widget.matchedHospital?['distance'] != null)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.directions_car,
+                            color: Colors.blue[800],
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${widget.matchedHospital?['distance']?.toStringAsFixed(1) ?? '0.0'} km',
+                            style: TextStyle(
+                              color: Colors.blue[800],
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          
-          // Distance indicator
-          Positioned(
-            top: 12,
-            right: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(50),
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.directions_car,
-                    color: Colors.blue[800],
-                    size: 14,
+                  child: const Icon(
+                    Icons.location_on,
+                    color: Colors.white,
+                    size: 28,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${widget.matchedHospital?['distance']?.toStringAsFixed(1) ?? '0.0'} km',
-                    style: TextStyle(
-                      color: Colors.blue[800],
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _getHospitalName(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+              
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: _navigateToHospital,
+                  icon: const Icon(Icons.directions, size: 16),
+                  label: const Text('Open in Maps', style: TextStyle(fontSize: 12)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.blue[800],
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    minimumSize: const Size(120, 36),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
                     ),
                   ),
+                ),
                 ],
               ),
             ),
-          ),
-        ],
+        ]
+        
       ),
     );
   }
@@ -390,39 +380,47 @@ Widget _buildHospitalDetails() {
           ),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Centered hospital name with larger font
             Text(
               _getHospitalName(),
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 18,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
-            _buildDetailItem(
-              icon: Icons.location_on,
-              title: 'Address',
-              value: _getHospitalAddress(),
+            const SizedBox(height: 16),
+            // Details aligned left
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDetailItem(
+                  icon: Icons.location_on,
+                  title: 'Address',
+                  value: _getHospitalAddress(),
+                ),
+                _buildDetailItem(
+                  icon: Icons.phone,
+                  title: 'Emergency Phone',
+                  value: _getHospitalPhone(),
+                ),
+                if (widget.matchedHospital?['distance'] != null)
+                  _buildDetailItem(
+                    icon: Icons.directions_car,
+                    title: 'Distance',
+                    value: '${widget.matchedHospital?['distance']} km',
+                  ),
+                if (widget.matchedHospital?['availableBeds'] != null)
+                  _buildDetailItem(
+                    icon: Icons.bed,
+                    title: 'Available Beds',
+                    value: '${widget.matchedHospital?['availableBeds']} beds',
+                  ),
+              ],
             ),
-            _buildDetailItem(
-              icon: Icons.phone,
-              title: 'Emergency Phone',
-              value: _getHospitalPhone(),
-            ),
-            if (widget.matchedHospital?['distance'] != null)
-              _buildDetailItem(
-                icon: Icons.directions_car,
-                title: 'Distance',
-                value: '${widget.matchedHospital?['distance']} km',
-              ),
-            if (widget.matchedHospital?['availableBeds'] != null)
-              _buildDetailItem(
-                icon: Icons.bed,
-                title: 'Available Beds',
-                value: '${widget.matchedHospital?['availableBeds']} beds',
-              ),
           ],
         ),
       ),
@@ -441,21 +439,25 @@ Widget _buildHospitalDetails() {
             ),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Text(
                 'Hospital Capabilities',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _buildCapabilityBadges(),
+              Center(
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: _buildCapabilityBadges(),
+                ),
               ),
             ],
           ),
@@ -591,7 +593,9 @@ Widget _buildCapabilityBadge(IconData icon, String label, Color color) {
 }
   
   Widget _buildMatchScoreCard() {
-    final score = (widget.matchScore ?? 0.0) * 100;
+    // Ensure score is displayed correctly (not as 9250%)
+    final rawScore = widget.matchScore ?? 0.0;
+    final score = rawScore > 1.0 ? rawScore : rawScore * 100;
     final scoreText = score.toStringAsFixed(0);
     
     // Determine color based on score

@@ -220,7 +220,7 @@ class _EmergencyHomePageState extends State<EmergencyHomePage>
           ),
           const SizedBox(height: 16),
           Text(
-            'Căutăm cel mai bun spital...\nSearching for best hospital...',
+            'Searching for best hospital...',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.white,
@@ -232,64 +232,79 @@ class _EmergencyHomePageState extends State<EmergencyHomePage>
   }
 
   Widget _buildResultsSummary(EmergencyProvider provider) {
-    final hospital = provider.bestHospitalMatch;
-    final score = provider.matchScore;
+    final bestMatch = provider.bestHospitalMatch;
+    if (bestMatch == null) return const SizedBox.shrink();
     
     return GlassmorphicContainer(
       width: double.infinity,
-      height: 150,
+      height: 360,
       borderRadius: 20,
-      blur: 10,
+      blur: 20,
       alignment: Alignment.center,
       border: 2,
       linearGradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
         colors: [
-          AppTheme.accentGreen.withOpacity(0.1),
-          AppTheme.accentGreen.withOpacity(0.05),
+          Colors.white.withOpacity(0.1),
+          Colors.white.withOpacity(0.05),
         ],
+        stops: const [0.1, 1],
       ),
       borderGradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
         colors: [
-          AppTheme.accentGreen.withOpacity(0.3),
-          AppTheme.accentGreen.withOpacity(0.1),
+          Colors.white.withOpacity(0.5),
+          Colors.white.withOpacity(0.2),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.check_circle,
-              color: AppTheme.accentGreen,
-              size: 32,
+              color: Colors.green,
+              size: 40,
             ),
             const SizedBox(height: 12),
             Text(
-              'Hospital Found!',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontSize: 16,
-                color: AppTheme.accentGreen,
+              'Hospital Found',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
-            if (hospital != null) ...[
-              Text(
-                hospital['name'] ?? 'Unknown Hospital',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+            Text(
+              bestMatch['name'] ?? 'Unknown Hospital',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 26),
+            _buildAdditionalActions(provider),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                provider.reset();
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Start New Emergency'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.blue[800],
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
                 ),
               ),
-              if (score != null)
-                Text(
-                  'Match Score: ${score.toStringAsFixed(1)}/100',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.white70,
-                  ),
-                ),
-            ],
+            ),
           ],
         ),
       ),
@@ -403,19 +418,22 @@ class _EmergencyHomePageState extends State<EmergencyHomePage>
         'lng': position.longitude,
       };
       
-      // Start emergency matching using the corrected provider method
-      // await provider.createEmergency(
-      //   emergencyType: 'general', // Default emergency type
-      //   patientData: patientData,
-      //   location: location,
-      //   onSuccess: (results) {
-      //     // Navigate to results screen
-      //     _navigateToResultScreen(provider);
-      //   },
-      //   onError: (error) {
-      //     _showErrorDialog(context, 'Emergency creation failed: $error');
-      //   },
-      // );
+      // Reset provider state to ensure we can start a new emergency flow
+      provider.reset();
+      
+      // Start emergency matching using the provider method
+      await provider.createEmergency(
+        emergencyType: 'general', // Default emergency type
+        patientData: patientData,
+        location: location,
+        onSuccess: (results) {
+          // Navigate to results screen
+          _navigateToResultScreen(provider);
+        },
+        onError: (error) {
+          _showErrorDialog(context, 'Emergency creation failed: $error');
+        },
+      );
       
     } catch (e) {
       _showErrorDialog(context, 'Eroare: ${e.toString()}');

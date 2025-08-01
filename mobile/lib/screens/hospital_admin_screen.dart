@@ -76,18 +76,70 @@ class _HospitalAdminScreenState extends State<HospitalAdminScreen> {
       return;
     }
 
+    final walletService = Provider.of<WalletService>(context, listen: false);
+    
+    // Check if wallet is connected
+    if (!walletService.isConnected) {
+      setState(() {
+        _statusMessage = 'Please connect your wallet first';
+        _isSuccess = false;
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _statusMessage = 'Updating hospital capacity...';
     });
-
-    final walletService = Provider.of<WalletService>(context, listen: false);
     
-    final result = await walletService.updateCapacity(
+    // First try to update capacity
+    var result = await walletService.updateCapacity(
       int.parse(_icuBedsController.text),
       int.parse(_emergencyBedsController.text),
       int.parse(_ventilatorsController.text),
     );
+
+    // If hospital not registered error, register it automatically and try again
+    if (!result['success'] && result['error'].toString().contains('Hospital not registered')) {
+      setState(() {
+        _statusMessage = 'Hospital not registered. Registering automatically...';
+      });
+      
+      print('DEBUG: Attempting to register hospital automatically');
+      print('DEBUG: Wallet address: ${walletService.walletAddress}');
+      
+      // Define default hospital details
+      const String hospitalName = 'MedChain Hospital';
+      const String hospitalLocation = 'City Center';
+      const String hospitalPhone = '+1-555-MEDCHAIN';
+      final List<String> specializations = ['general', 'emergency', 'cardiology', 'neurology', 'pediatrics'];
+      
+      // Register the hospital
+      final registrationResult = await walletService.registerHospital(
+        name: hospitalName,
+        location: hospitalLocation,
+        specializations: specializations,
+        phoneNumber: hospitalPhone,
+      );
+      
+      print('DEBUG: Registration result: $registrationResult');
+      
+      if (registrationResult['success']) {
+        setState(() {
+          _statusMessage = 'Hospital registered successfully. Updating capacity...';
+        });
+        // Try updating capacity again
+        result = await walletService.updateCapacity(
+          int.parse(_icuBedsController.text),
+          int.parse(_emergencyBedsController.text),
+          int.parse(_ventilatorsController.text),
+        );
+        print('DEBUG: Second update attempt result: $result');
+      } else {
+        result = registrationResult; // Pass registration error to UI
+        print('DEBUG: Registration failed: ${registrationResult['error']}');
+      }
+    }
 
     setState(() {
       _isLoading = false;
@@ -106,12 +158,21 @@ class _HospitalAdminScreenState extends State<HospitalAdminScreen> {
       return;
     }
 
+    final walletService = Provider.of<WalletService>(context, listen: false);
+    
+    // Check if wallet is connected
+    if (!walletService.isConnected) {
+      setState(() {
+        _statusMessage = 'Please connect your wallet first';
+        _isSuccess = false;
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _statusMessage = 'Updating medical personnel...';
     });
-
-    final walletService = Provider.of<WalletService>(context, listen: false);
     
     final personnelCounts = {
       'cardiologist': int.parse(_cardiologistsController.text),
@@ -121,7 +182,46 @@ class _HospitalAdminScreenState extends State<HospitalAdminScreen> {
       'emergency': int.parse(_emergencyDoctorsController.text),
     };
 
-    final result = await walletService.updateMedicalPersonnel(personnelCounts);
+    // First try to update medical personnel
+    var result = await walletService.updateMedicalPersonnel(personnelCounts);
+
+    // If hospital not registered error, register it automatically and try again
+    if (!result['success'] && result['error'].toString().contains('Hospital not registered')) {
+      setState(() {
+        _statusMessage = 'Hospital not registered. Registering automatically...';
+      });
+      
+      print('DEBUG: Attempting to register hospital automatically (medical personnel)');
+      print('DEBUG: Wallet address: ${walletService.walletAddress}');
+      
+      // Define default hospital details
+      const String hospitalName = 'MedChain Hospital';
+      const String hospitalLocation = 'City Center';
+      const String hospitalPhone = '+1-555-MEDCHAIN';
+      final List<String> specializations = ['general', 'emergency', 'cardiology', 'neurology', 'pediatrics'];
+      
+      // Register the hospital
+      final registrationResult = await walletService.registerHospital(
+        name: hospitalName,
+        location: hospitalLocation,
+        specializations: specializations,
+        phoneNumber: hospitalPhone,
+      );
+      
+      print('DEBUG: Registration result (medical personnel): $registrationResult');
+      
+      if (registrationResult['success']) {
+        setState(() {
+          _statusMessage = 'Hospital registered successfully. Updating medical personnel...';
+        });
+        // Try updating medical personnel again
+        result = await walletService.updateMedicalPersonnel(personnelCounts);
+        print('DEBUG: Second update attempt result (medical personnel): $result');
+      } else {
+        result = registrationResult; // Pass registration error to UI
+        print('DEBUG: Registration failed (medical personnel): ${registrationResult['error']}');
+      }
+    }
 
     setState(() {
       _isLoading = false;
@@ -166,201 +266,227 @@ class _HospitalAdminScreenState extends State<HospitalAdminScreen> {
   @override
   Widget build(BuildContext context) {
     final walletService = Provider.of<WalletService>(context);
-
+    final isConnected = walletService.isConnected;
+    final walletAddress = walletService.walletAddress;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Hospital Admin Dashboard'),
-        actions: [
-          if (walletService.isConnected)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                child: Text(
-                  'Connected: ${walletService.walletAddress?.substring(0, 6)}...${walletService.walletAddress?.substring(walletService.walletAddress!.length - 4)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-        ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (!walletService.isConnected)
-              ElevatedButton(
-                onPressed: _isLoading ? null : _connectWallet,
-                child: const Text('Connect Hospital Wallet'),
-              )
-            else
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Text(
-                        'Hospital Resource Management',
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Wallet Connection Status
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Wallet Connection',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Status: ${isConnected ? 'Connected' : 'Disconnected'}',
+                        style: TextStyle(
+                          color: isConnected ? Colors.green : Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (isConnected && walletAddress != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            'Address: ${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}',
+                            style: const TextStyle(fontFamily: 'monospace'),
+                          ),
+                        ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _connectWallet,
+                        child: Text(isConnected ? 'Reconnect Wallet' : 'Connect Wallet'),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  
-                  // Capacity Section
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Update Hospital Capacity',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          TextField(
-                            controller: _icuBedsController,
-                            decoration: const InputDecoration(
-                              labelText: 'ICU Beds Available',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: _emergencyBedsController,
-                            decoration: const InputDecoration(
-                              labelText: 'Emergency Beds Available',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: _ventilatorsController,
-                            decoration: const InputDecoration(
-                              labelText: 'Ventilators Available',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _isLoading ? null : _updateCapacity,
-                            child: const Text('Update Capacity'),
-                          ),
-                        ],
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Only show the rest of the UI if wallet is connected
+              if (isConnected) ...[
+                const Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      'Hospital Resource Management',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Medical Personnel Section
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Update Medical Personnel',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Hospital Capacity Section
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Update Hospital Capacity',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(height: 16),
-                          TextField(
-                            controller: _cardiologistsController,
-                            decoration: const InputDecoration(
-                              labelText: 'Cardiologists Available Today',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _icuBedsController,
+                          decoration: const InputDecoration(
+                            labelText: 'ICU Beds Available',
+                            border: OutlineInputBorder(),
                           ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: _surgeonsController,
-                            decoration: const InputDecoration(
-                              labelText: 'Surgeons Available Today',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _emergencyBedsController,
+                          decoration: const InputDecoration(
+                            labelText: 'Emergency Beds Available',
+                            border: OutlineInputBorder(),
                           ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: _pediatriciansController,
-                            decoration: const InputDecoration(
-                              labelText: 'Pediatricians Available Today',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _ventilatorsController,
+                          decoration: const InputDecoration(
+                            labelText: 'Ventilators Available',
+                            border: OutlineInputBorder(),
                           ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: _neurologistsController,
-                            decoration: const InputDecoration(
-                              labelText: 'Neurologists Available Today',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: _emergencyDoctorsController,
-                            decoration: const InputDecoration(
-                              labelText: 'Emergency Doctors Available Today',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _isLoading ? null : _updateMedicalPersonnel,
-                            child: const Text('Update Medical Personnel'),
-                          ),
-                        ],
-                      ),
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _updateCapacity,
+                          child: const Text('Update Capacity'),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            
-            const SizedBox(height: 16),
-            
-            if (_statusMessage.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: _isSuccess ? Colors.green.shade100 : Colors.red.shade100,
-                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  _statusMessage,
-                  style: TextStyle(
-                    color: _isSuccess ? Colors.green.shade900 : Colors.red.shade900,
-                    fontWeight: FontWeight.bold,
+                
+                const SizedBox(height: 16),
+                
+                // Medical Personnel Section
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Update Medical Personnel',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _cardiologistsController,
+                          decoration: const InputDecoration(
+                            labelText: 'Cardiologists Available Today',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _surgeonsController,
+                          decoration: const InputDecoration(
+                            labelText: 'Surgeons Available Today',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _pediatriciansController,
+                          decoration: const InputDecoration(
+                            labelText: 'Pediatricians Available Today',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _neurologistsController,
+                          decoration: const InputDecoration(
+                            labelText: 'Neurologists Available Today',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _emergencyDoctorsController,
+                          decoration: const InputDecoration(
+                            labelText: 'Emergency Doctors Available Today',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _updateMedicalPersonnel,
+                          child: const Text('Update Medical Personnel'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             
-            if (_isLoading)
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Center(
-                  child: CircularProgressIndicator(),
+              const SizedBox(height: 16),
+            
+              if (_statusMessage.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: _isSuccess ? Colors.green.shade100 : Colors.red.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _statusMessage,
+                    style: TextStyle(
+                      color: _isSuccess ? Colors.green.shade900 : Colors.red.shade900,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-          ],
+            
+              if (_isLoading)
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

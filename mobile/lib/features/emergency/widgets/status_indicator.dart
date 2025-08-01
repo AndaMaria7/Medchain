@@ -118,12 +118,13 @@ class StatusIndicator extends StatelessWidget {
     return 'System Ready';
   }
 
-  String _getStatusSubtitle() {
-    if (errorMessage != null) return 'Try again';
-    if (isLoading) return 'Căutăm cel mai bun spital...';
-    if (isEmergencyActive) return 'Spital găsit și recomandat';
-    return 'Apasă butonul roșu pentru urgență';
-  }
+String _getStatusSubtitle() {
+  if (errorMessage != null) return 'Try again';
+  if (isLoading) return 'Searching for the best hospital...';
+  if (isEmergencyActive) return 'Hospital found and recommended';
+  return 'Press the red button for emergency';
+}
+
 
   LinearGradient _getGradient() {
     if (errorMessage != null) {
