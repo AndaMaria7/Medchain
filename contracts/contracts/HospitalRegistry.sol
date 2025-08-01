@@ -15,9 +15,10 @@ contract HospitalRegistry is Ownable {
         string[] specializations;
         string location;
         string phoneNumber;
-        mapping(string => uint256) medicalPersonnel; 
         uint256 personnelLastUpdated;
     }
+    
+    mapping(address => mapping(string => uint256)) public hospitalMedicalPersonnel;
     
     struct CapacityUpdate {
         uint256 timestamp;
@@ -103,17 +104,16 @@ contract HospitalRegistry is Ownable {
         require(bytes(name).length > 0, "Name cannot be empty");
         require(bytes(hospitals[hospitalAddress].name).length == 0, "Hospital already registered");
         
-        hospitals[hospitalAddress] = HospitalCapacity({
-            name: name,
-            icuBeds: 0,
-            emergencyBeds: 0,
-            ventilators: 0,
-            lastUpdated: 0,
-            verified: false,
-            specializations: specializations,
-            location: location,
-            phoneNumber: phoneNumber
-        });
+        hospitals[hospitalAddress].name = name;
+        hospitals[hospitalAddress].icuBeds = 0;
+        hospitals[hospitalAddress].emergencyBeds = 0;
+        hospitals[hospitalAddress].ventilators = 0;
+        hospitals[hospitalAddress].lastUpdated = 0;
+        hospitals[hospitalAddress].verified = false;
+        hospitals[hospitalAddress].specializations = specializations;
+        hospitals[hospitalAddress].location = location;
+        hospitals[hospitalAddress].phoneNumber = phoneNumber;
+        hospitals[hospitalAddress].personnelLastUpdated = 0;
         
         hospitalAddresses.push(hospitalAddress);
         
@@ -292,7 +292,7 @@ contract HospitalRegistry is Ownable {
             string memory specialistType = specialistTypes[i];
             uint256 count = counts[i];
             
-            hospital.medicalPersonnel[specialistType] = count;
+            hospitalMedicalPersonnel[msg.sender][specialistType] = count;
             
             personnelHistory[msg.sender].push(PersonnelUpdate({
                 timestamp: block.timestamp,
@@ -325,7 +325,7 @@ contract HospitalRegistry is Ownable {
             string memory specialistType = specialistTypes[i];
             uint256 count = counts[i];
             
-            hospital.medicalPersonnel[specialistType] = count;
+            hospitalMedicalPersonnel[hospitalAddress][specialistType] = count;
             
             personnelHistory[hospitalAddress].push(PersonnelUpdate({
                 timestamp: block.timestamp,
@@ -372,7 +372,7 @@ contract HospitalRegistry is Ownable {
         string memory specialistType
     ) external view returns (uint256) {
         require(bytes(hospitals[hospitalAddress].name).length > 0, "Hospital not registered");
-        return hospitals[hospitalAddress].medicalPersonnel[specialistType];
+        return hospitalMedicalPersonnel[hospitalAddress][specialistType];
     }
     
     /**

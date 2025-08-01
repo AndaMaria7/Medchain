@@ -5,6 +5,7 @@ import 'package:medchain_emergency/features/emergency/emergency_provider.dart';
 import 'package:medchain_emergency/features/hospital/hospital_provider.dart';
 import 'package:medchain_emergency/features/hospital/hospital_admin_page.dart';
 import 'package:medchain_emergency/features/emergency/hospital_result_screen.dart';
+import 'package:medchain_emergency/services/wallet_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'core/theme/app_theme.dart';
@@ -33,12 +34,13 @@ class MedChainApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => EmergencyProvider()),
         ChangeNotifierProvider(create: (_) => HospitalProvider()),
+        ChangeNotifierProvider(create: (_) => WalletService()),
       ],
       child: MaterialApp(
         title: 'MedChain Emergency',
         theme: AppTheme.darkTheme,
         debugShowCheckedModeBanner: false,
-        navigatorKey: emergencyNavigatorKey, // Use the global navigation key
+        navigatorKey: emergencyNavigatorKey, 
         home: const AppRouter(),
         routes: {
           '/emergency': (context) => const EmergencyHomePage(),

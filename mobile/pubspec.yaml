@@ -55,11 +55,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  # Assets and custom fonts are currently disabled until placeholder files are added.
-  # assets:
-  #   - assets/images/
-  #   - assets/animations/
-  #   - assets/icons/
+  assets:
+    - assets/contract-address/
+    - assets/contracts/
   #
   # fonts:
   #   - family: Poppins

@@ -1,37 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../services/wallet_service.dart';
+import '../services/wallet_service.dart';
 
-class HospitalAdminPage extends StatefulWidget {
-  const HospitalAdminPage({Key? key}) : super(key: key);
+class HospitalAdminScreen extends StatefulWidget {
+  const HospitalAdminScreen({Key? key}) : super(key: key);
 
   @override
-  State<HospitalAdminPage> createState() => _HospitalAdminPageState();
+  _HospitalAdminScreenState createState() => _HospitalAdminScreenState();
 }
 
-class _HospitalAdminPageState extends State<HospitalAdminPage> with SingleTickerProviderStateMixin {
-  final _icuController = TextEditingController();
-  final _emergencyController = TextEditingController();
-  final _ventilatorController = TextEditingController();
+class _HospitalAdminScreenState extends State<HospitalAdminScreen> {
+  // Form controllers
+  final TextEditingController _icuBedsController = TextEditingController();
+  final TextEditingController _emergencyBedsController = TextEditingController();
+  final TextEditingController _ventilatorsController = TextEditingController();
   
-  final _cardiologistsController = TextEditingController();
-  final _surgeonsController = TextEditingController();
-  final _pediatriciansController = TextEditingController();
-  final _neurologistsController = TextEditingController();
-  final _emergencyDoctorsController = TextEditingController();
+  // Medical personnel controllers
+  final TextEditingController _cardiologistsController = TextEditingController();
+  final TextEditingController _surgeonsController = TextEditingController();
+  final TextEditingController _pediatriciansController = TextEditingController();
+  final TextEditingController _neurologistsController = TextEditingController();
+  final TextEditingController _emergencyDoctorsController = TextEditingController();
   
-  late TabController _tabController;
   bool _isLoading = false;
   String _statusMessage = '';
   bool _isSuccess = false;
-  
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _initializeWallet();
   }
-  
+
   Future<void> _initializeWallet() async {
     final walletService = Provider.of<WalletService>(context, listen: false);
     await walletService.initialize();
@@ -39,15 +39,14 @@ class _HospitalAdminPageState extends State<HospitalAdminPage> with SingleTicker
 
   @override
   void dispose() {
-    _icuController.dispose();
-    _emergencyController.dispose();
-    _ventilatorController.dispose();
+    _icuBedsController.dispose();
+    _emergencyBedsController.dispose();
+    _ventilatorsController.dispose();
     _cardiologistsController.dispose();
     _surgeonsController.dispose();
     _pediatriciansController.dispose();
     _neurologistsController.dispose();
     _emergencyDoctorsController.dispose();
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -73,13 +72,7 @@ class _HospitalAdminPageState extends State<HospitalAdminPage> with SingleTicker
   }
 
   Future<void> _updateCapacity() async {
-    if (_icuController.text.isEmpty ||
-        _emergencyController.text.isEmpty ||
-        _ventilatorController.text.isEmpty) {
-      setState(() {
-        _statusMessage = 'Please fill in all capacity fields';
-        _isSuccess = false;
-      });
+    if (!_validateCapacityInputs()) {
       return;
     }
 
@@ -91,9 +84,9 @@ class _HospitalAdminPageState extends State<HospitalAdminPage> with SingleTicker
     final walletService = Provider.of<WalletService>(context, listen: false);
     
     final result = await walletService.updateCapacity(
-      int.parse(_icuController.text),
-      int.parse(_emergencyController.text),
-      int.parse(_ventilatorController.text),
+      int.parse(_icuBedsController.text),
+      int.parse(_emergencyBedsController.text),
+      int.parse(_ventilatorsController.text),
     );
 
     setState(() {
@@ -109,15 +102,7 @@ class _HospitalAdminPageState extends State<HospitalAdminPage> with SingleTicker
   }
 
   Future<void> _updateMedicalPersonnel() async {
-    if (_cardiologistsController.text.isEmpty ||
-        _surgeonsController.text.isEmpty ||
-        _pediatriciansController.text.isEmpty ||
-        _neurologistsController.text.isEmpty ||
-        _emergencyDoctorsController.text.isEmpty) {
-      setState(() {
-        _statusMessage = 'Please fill in all medical personnel fields';
-        _isSuccess = false;
-      });
+    if (!_validatePersonnelInputs()) {
       return;
     }
 
@@ -150,20 +135,41 @@ class _HospitalAdminPageState extends State<HospitalAdminPage> with SingleTicker
     });
   }
 
+  bool _validateCapacityInputs() {
+    if (_icuBedsController.text.isEmpty ||
+        _emergencyBedsController.text.isEmpty ||
+        _ventilatorsController.text.isEmpty) {
+      setState(() {
+        _statusMessage = 'Please fill in all capacity fields';
+        _isSuccess = false;
+      });
+      return false;
+    }
+    return true;
+  }
+
+  bool _validatePersonnelInputs() {
+    if (_cardiologistsController.text.isEmpty ||
+        _surgeonsController.text.isEmpty ||
+        _pediatriciansController.text.isEmpty ||
+        _neurologistsController.text.isEmpty ||
+        _emergencyDoctorsController.text.isEmpty) {
+      setState(() {
+        _statusMessage = 'Please fill in all medical personnel fields';
+        _isSuccess = false;
+      });
+      return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final walletService = Provider.of<WalletService>(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Hospital Admin Dashboard'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Capacity'),
-            Tab(text: 'Personnel'),
-          ],
-        ),
         actions: [
           if (walletService.isConnected)
             Padding(
@@ -171,35 +177,47 @@ class _HospitalAdminPageState extends State<HospitalAdminPage> with SingleTicker
               child: Center(
                 child: Text(
                   'Connected: ${walletService.walletAddress?.substring(0, 6)}...${walletService.walletAddress?.substring(walletService.walletAddress!.length - 4)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (!walletService.isConnected) ... [
-              Center(
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _connectWallet,
-                  child: const Text('Connect Hospital Wallet'),
-                ),
-              ),
-            ] else ... [
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    // Capacity Tab
-                    SingleChildScrollView(
+            if (!walletService.isConnected)
+              ElevatedButton(
+                onPressed: _isLoading ? null : _connectWallet,
+                child: const Text('Connect Hospital Wallet'),
+              )
+            else
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Card(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        'Hospital Resource Management',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Capacity Section
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 16),
                           const Text(
                             'Update Hospital Capacity',
                             style: TextStyle(
@@ -209,49 +227,50 @@ class _HospitalAdminPageState extends State<HospitalAdminPage> with SingleTicker
                           ),
                           const SizedBox(height: 16),
                           TextField(
-                            controller: _icuController,
+                            controller: _icuBedsController,
                             decoration: const InputDecoration(
                               labelText: 'ICU Beds Available',
                               border: OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.number,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           TextField(
-                            controller: _emergencyController,
+                            controller: _emergencyBedsController,
                             decoration: const InputDecoration(
                               labelText: 'Emergency Beds Available',
                               border: OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.number,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           TextField(
-                            controller: _ventilatorController,
+                            controller: _ventilatorsController,
                             decoration: const InputDecoration(
                               labelText: 'Ventilators Available',
                               border: OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.number,
                           ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _updateCapacity,
-                              child: const Text('Update Capacity'),
-                            ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: _isLoading ? null : _updateCapacity,
+                            child: const Text('Update Capacity'),
                           ),
                         ],
                       ),
                     ),
-                    
-                    // Medical Personnel Tab
-                    SingleChildScrollView(
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Medical Personnel Section
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 16),
                           const Text(
                             'Update Medical Personnel',
                             style: TextStyle(
@@ -268,7 +287,7 @@ class _HospitalAdminPageState extends State<HospitalAdminPage> with SingleTicker
                             ),
                             keyboardType: TextInputType.number,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           TextField(
                             controller: _surgeonsController,
                             decoration: const InputDecoration(
@@ -277,7 +296,7 @@ class _HospitalAdminPageState extends State<HospitalAdminPage> with SingleTicker
                             ),
                             keyboardType: TextInputType.number,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           TextField(
                             controller: _pediatriciansController,
                             decoration: const InputDecoration(
@@ -286,7 +305,7 @@ class _HospitalAdminPageState extends State<HospitalAdminPage> with SingleTicker
                             ),
                             keyboardType: TextInputType.number,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           TextField(
                             controller: _neurologistsController,
                             decoration: const InputDecoration(
@@ -295,7 +314,7 @@ class _HospitalAdminPageState extends State<HospitalAdminPage> with SingleTicker
                             ),
                             keyboardType: TextInputType.number,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           TextField(
                             controller: _emergencyDoctorsController,
                             decoration: const InputDecoration(
@@ -304,48 +323,43 @@ class _HospitalAdminPageState extends State<HospitalAdminPage> with SingleTicker
                             ),
                             keyboardType: TextInputType.number,
                           ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _updateMedicalPersonnel,
-                              child: const Text('Update Medical Personnel'),
-                            ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: _isLoading ? null : _updateMedicalPersonnel,
+                            child: const Text('Update Medical Personnel'),
                           ),
                         ],
                       ),
                     ),
-                  ],
+                  ),
+                ],
+              ),
+            
+            const SizedBox(height: 16),
+            
+            if (_statusMessage.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _isSuccess ? Colors.green.shade100 : Colors.red.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  _statusMessage,
+                  style: TextStyle(
+                    color: _isSuccess ? Colors.green.shade900 : Colors.red.shade900,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              
-              if (_statusMessage.isNotEmpty) ... [
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: _isSuccess ? Colors.green.shade100 : Colors.red.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    _statusMessage,
-                    style: TextStyle(
-                      color: _isSuccess ? Colors.green.shade900 : Colors.red.shade900,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+            
+            if (_isLoading)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
+                  child: CircularProgressIndicator(),
                 ),
-              ],
-              
-              if (_isLoading) ... [
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                ),
-              ],
-            ],
+              ),
           ],
         ),
       ),
